@@ -30,6 +30,7 @@ from .runtime_data import (
 )
 from .route_decisions import set_pending_route_decision
 from .service_errors import service_error as _service_error
+from .sip_listener import sip_caller_id
 from .sip_runtime import send_final_response
 from .softphone_commands import BrowserCallCommand, bind_service_call_controller
 from .core.video_rtp import RtpSenderState
@@ -153,6 +154,7 @@ async def async_answer_browser_call(
             state=CallState.IN_CALL.value,
             owner="ha_softphone",
             caller=room_name,
+            caller_id=room_name,
             callee=local_name,
             route_kind="conference",
             endpoint_id=endpoint_id,
@@ -367,6 +369,7 @@ async def async_answer_browser_call(
             state=CallState.IN_CALL.value,
             owner="ha_softphone",
             caller=invite.caller,
+            caller_id=sip_caller_id(invite),
             callee=resolved_callee,
             route_kind="ha_softphone",
             endpoint_id=endpoint_id,
@@ -458,7 +461,8 @@ async def async_answer_browser_call(
         hass,
         authoritative_session,
         endpoint_id,
-            peer_name=invite.caller, connected_party=invite.caller,
+            peer_name=invite.caller, caller_id=sip_caller_id(invite),
+            connected_party=invite.caller,
             answered_by=invite.caller, direction="incoming",
             dialed_target=invite.target, sip_status_code=200,
             last_sip_event="SIP_RESPONSE",

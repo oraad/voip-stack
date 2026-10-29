@@ -31,6 +31,7 @@ TO_REDACT = {
     "auth_username",
     "callee",
     "caller",
+    "caller_id",
     "contact",
     "contacts",
     "device_id",

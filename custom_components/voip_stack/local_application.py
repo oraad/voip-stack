@@ -66,9 +66,17 @@ class LocalCallApplication:
     def handle_dtmf(self, side, digit, transport):
         from .dtmf_events import publish_dtmf_event
 
-        publish_dtmf_event(self.hass, call_id=self.session.call_id, dest_call_id="",
-                           caller=self.session.caller, callee=self.session.callee,
-                           side=side, digit=digit, transport=transport)
+        publish_dtmf_event(
+            self.hass,
+            call_id=self.session.call_id,
+            dest_call_id="",
+            caller=self.session.caller,
+            caller_id=str(self.session.metadata.get("caller_id") or ""),
+            callee=self.session.callee,
+            side=side,
+            digit=digit,
+            transport=transport,
+        )
 
     async def release_media_for_forward(self) -> None:
         """Release the local receiver before the next media owner binds it."""
@@ -89,9 +97,14 @@ class LocalCallApplication:
         if self.outgoing:
             raise ServiceValidationError("The outgoing automation call is not ready")
         if self.source_client is not None:
-            self.invite = ApplicationCallSource.from_client(self.source_client,
-                call_id=self.session.call_id, caller=self.session.caller, target=self.contact.id,
-                trunk_id=str(self.session.metadata.get("inbound_trunk_id") or ""))
+            self.invite = ApplicationCallSource.from_client(
+                self.source_client,
+                call_id=self.session.call_id,
+                caller=self.session.caller,
+                caller_id=str(self.session.metadata.get("caller_id") or ""),
+                target=self.contact.id,
+                trunk_id=str(self.session.metadata.get("inbound_trunk_id") or ""),
+            )
         registry = call_registry(self.hass)
         preanswered = registry.resource_for(self.session.call_id, "preanswered")
         reservation = (
@@ -148,6 +161,7 @@ class LocalCallApplication:
                 response_context=self.hass,
                 owner=self.owner,
                 caller=self.invite.caller,
+                caller_id=str(getattr(self.invite, "caller_id", "") or ""),
                 callee=self.contact.display_name,
                 route_kind=self.owner,
                 response_already_sent=self.answered or self.local_source is not None,
@@ -250,8 +264,14 @@ def bind_application_source_dialog(application):
     async def prepare(_previous, updated, _method):
         if not session.live or registry.resource_for(session.call_id, "relay") is not media:
             return None
-        source = ApplicationCallSource.from_peer_dialog(updated, call_id=session.call_id,
-            caller=session.caller, target=session.callee, trunk_id=str(session.metadata.get("inbound_trunk_id") or ""))
+        source = ApplicationCallSource.from_peer_dialog(
+            updated,
+            call_id=session.call_id,
+            caller=session.caller,
+            caller_id=str(session.metadata.get("caller_id") or ""),
+            target=session.callee,
+            trunk_id=str(session.metadata.get("inbound_trunk_id") or ""),
+        )
         commit_media = media.prepare_media_update(source)
         async def commit():
             if (not registry.is_generation_current(session.call_id, session.generation)

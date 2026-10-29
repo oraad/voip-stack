@@ -28,7 +28,7 @@ from ..media_ports import (
 )
 from ..runtime_data import call_runtime_artifacts
 from ..core.sdp import build_answer_directional
-from ..sip_listener import SipInviteResult
+from ..sip_listener import SipInviteResult, sip_caller_id
 
 if TYPE_CHECKING:
     from ..pbx_runtime import SipEndpointRuntime
@@ -92,6 +92,7 @@ def prepare_trunk_preanswer(
         state=CallState.CONNECTING.value,
         owner="router",
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=callee,
         route_kind="trunk",
         ingress="trunk",
@@ -188,6 +189,7 @@ def prepare_trunk_preanswer(
         hass,
         session,
         peer_name=invite.caller,
+        caller_id=sip_caller_id(invite),
         selected_tx_format=invite.send_format.audio_format.wire_token(),
         selected_rx_format=invite.recv_format.audio_format.wire_token(),
         selected_tx_rtp_format=invite.send_format.wire_token(),

@@ -20,6 +20,8 @@ from .core import sdp as sip_sdp
 from .call_scope import pending_routes as _pending_routes
 from .runtime_data import endpoint_directory, preferred_browser_phone, sip_trunk, registration_data
 from .automation_routing import matches_call
+from .roster import find_entry_by_number, is_phone_number_identity, normalize_number
+from .sip_listener import sip_caller_id
 from .const import (
     CONF_AUTOMATION_ROUTING_ENABLED,
     CONF_TRUNK_DTMF_ENABLED,
@@ -62,6 +64,65 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 MAX_PENDING_HA_INVITES = 64
+
+
+def _trunk_caller_name(invite: SipInvite, roster_entries: list[Any]) -> str:
+    """Resolve a number-only trunk caller through the central phonebook.
+
+    A provider-supplied display name is authoritative and must never be
+    replaced by roster data.  The lookup therefore only applies when the
+    inbound ``From`` display is empty or is the same phone number as the
+    routing identity, and only the contact's ``number`` field is considered.
+    """
+    raw = str(invite.routing_caller or "").strip()
+    if not raw or not is_phone_number_identity(raw):
+        _LOGGER.debug(
+            "Trunk caller lookup skipped call_id=%s reason=not_a_number raw=%r",
+            invite.call_id,
+            raw,
+        )
+        return ""
+    displayed = str(invite.caller or "").strip()
+    if displayed and not is_phone_number_identity(displayed):
+        _LOGGER.debug(
+            "Trunk caller lookup skipped call_id=%s reason=provider_name name=%r",
+            invite.call_id,
+            displayed,
+        )
+        return ""
+    if displayed and normalize_number(displayed) != normalize_number(raw):
+        _LOGGER.debug(
+            "Trunk caller lookup skipped call_id=%s reason=display_mismatch "
+            "display=%r raw=%r",
+            invite.call_id,
+            displayed,
+            raw,
+        )
+        return ""
+    entry = find_entry_by_number(roster_entries, raw)
+    if entry is None:
+        _LOGGER.debug(
+            "Trunk caller lookup missed call_id=%s number=%r",
+            invite.call_id,
+            raw,
+        )
+        return ""
+    name = str(entry.display_name or "").strip()
+    if not name or normalize_number(name) == normalize_number(raw):
+        _LOGGER.debug(
+            "Trunk caller lookup skipped call_id=%s reason=name_is_number entry=%r",
+            invite.call_id,
+            entry.id,
+        )
+        return ""
+    _LOGGER.debug(
+        "Trunk caller lookup matched call_id=%s number=%r name=%r entry=%r",
+        invite.call_id,
+        raw,
+        name,
+        entry.id,
+    )
+    return name
 
 
 @dataclass(slots=True)
@@ -168,6 +229,14 @@ async def route_invite(
         and str(caller_roster_entry.address) == str(invite.source_host)
     )
     trunk_invite = _is_trunk_invite(invite)
+    if trunk_invite:
+        caller_name = _trunk_caller_name(invite, roster_entries)
+        if caller_name:
+            invite = replace(
+                invite,
+                caller=caller_name,
+                caller_id=invite.routing_caller,
+            )
     trunk_direct_preprocessed = False
     local_ha_origin = bool(
         _is_ha_target(caller_identity)
@@ -330,6 +399,7 @@ async def route_invite(
             return trunk_result
     native_override = any(matches_call({
         "caller": invite.caller,
+        "caller_id": sip_caller_id(invite),
         "callee": decision.target or invite.target,
         "destination": decision.entry.display_name if decision.entry is not None else invite.target,
         "called_extension": invite.routing_target if trunk_invite else (decision.entry.extension if decision.entry is not None else invite.target),

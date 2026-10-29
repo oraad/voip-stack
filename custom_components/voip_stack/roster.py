@@ -159,6 +159,60 @@ def find_entry(
     return None
 
 
+_PHONE_NUMBER_PUNCTUATION = frozenset("+ -()./")
+# Three digits covers emergency numbers (911, 112, 999).  Door stations and
+# other short numeric codes are intentionally included; two-digit codes are
+# treated as extensions rather than public phone numbers.
+_MIN_PHONE_DIGITS = 3
+
+
+def normalize_number(value: object) -> str:
+    """Return only the digits that identify a phone number."""
+    return "".join(ch for ch in str(value or "") if ch.isdigit())
+
+
+def is_phone_number_identity(value: object) -> bool:
+    """Return whether a SIP display identity is a phone number, not a name.
+
+    Trunk providers commonly put either a caller name or the public number in
+    the ``From`` display name.  Only the number form is eligible for a
+    phonebook name lookup; a provider-supplied name must remain untouched.
+    """
+    text = str(value or "").strip()
+    if not text:
+        return False
+    if any(not (ch.isdigit() or ch in _PHONE_NUMBER_PUNCTUATION) for ch in text):
+        return False
+    return len(normalize_number(text)) >= _MIN_PHONE_DIGITS
+
+
+def find_entry_by_number(
+    entries: list[RosterEntry],
+    number: object,
+) -> RosterEntry | None:
+    """Resolve one contact strictly by its external/public number.
+
+    Extensions and display names are deliberately excluded so an external
+    caller ID such as ``100`` cannot inherit a local extension's identity.
+    """
+    wanted = normalize_number(number)
+    if not wanted:
+        return None
+    matches = [
+        entry
+        for entry in entries
+        if (
+            entry.enabled
+            and is_phone_number_identity(entry.number)
+            and wanted == normalize_number(entry.number)
+        )
+    ]
+    if not matches:
+        return None
+    names = {entry.display_name.casefold() for entry in matches}
+    return matches[0] if len(names) == 1 else None
+
+
 def merge_roster_overrides(entries: list[RosterEntry], overrides: list[RosterEntry]) -> list[RosterEntry]:
     """Apply manual phonebook overlays without duplicating discovered endpoints."""
 

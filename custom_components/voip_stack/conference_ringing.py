@@ -161,6 +161,7 @@ async def async_ring_conference_members(
             state=CallState.CALLING.value,
             owner="bridge",
             caller=room_name,
+            caller_id=room_name,
             callee=member,
             route_kind=GROUP_TYPE_CONFERENCE,
             source_call_id=owner_call_id,

@@ -60,6 +60,9 @@ async def handle_sip_info(
                 call_id=session_id,
                 dest_call_id=registry.bridge_link_for(session_id),
                 caller=session.caller if session is not None else "",
+                caller_id=str(session.metadata.get("caller_id") or "")
+                if session is not None
+                else "",
                 callee=session.callee if session is not None else "",
                 side=side,
                 digit=digit,
@@ -99,6 +102,7 @@ def publish_dtmf_event(
     call_id: str,
     dest_call_id: str,
     caller: str,
+    caller_id: str = "",
     callee: str,
     side: str,
     digit: str,
@@ -140,6 +144,8 @@ def publish_dtmf_event(
         "route_kind": session.route_kind if session is not None else "",
         "automation_control": "ha_anchored",
     }
+    if caller_id:
+        payload["caller_id"] = caller_id
     payload.update(registry.event_fields(call_id, state))
     context = registry.ha_context(call_id)
     if context is None:
@@ -155,6 +161,7 @@ def attach_dtmf_event_bridge(
     call_id: str,
     dest_call_id: str,
     caller: str,
+    caller_id: str = "",
     callee: str,
     client=None,
     source_client=None,
@@ -162,11 +169,21 @@ def attach_dtmf_event_bridge(
     """Publish negotiated DTMF and translate legacy SIP INFO to RFC 4733."""
 
     def _emit(side: str, digit: str, transport: str) -> None:
+        registry = call_registry(hass)
+        session = registry.sessions.get(registry.resolve_session_id(call_id))
         publish_dtmf_event(
             hass,
             call_id=call_id,
             dest_call_id=dest_call_id,
             caller=caller,
+            caller_id=(
+                caller_id
+                or (
+                    str(session.metadata.get("caller_id") or "")
+                    if session is not None
+                    else ""
+                )
+            ),
             callee=callee,
             side=side,
             digit=digit,
@@ -209,6 +226,7 @@ def attach_direct_client_dtmf_events(
     *,
     call_id: str,
     caller: str,
+    caller_id: str = "",
     callee: str,
 ) -> None:
     """Project SIP INFO received by a direct outbound softphone dialog."""
@@ -218,6 +236,7 @@ def attach_direct_client_dtmf_events(
         call_id=call_id,
         dest_call_id="",
         caller=caller,
+        caller_id=caller_id,
         callee=callee,
         side="right",
         digit=digit,

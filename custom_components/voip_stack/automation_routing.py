@@ -156,7 +156,7 @@ def resolve_pending_route_call_id(
 def matches_call(payload: dict, options: dict) -> bool:
     """Match the event snapshot rather than mutable Event Entity attributes."""
     aliases = {
-        "caller": ("caller", "caller_number", "caller_extension"),
+        "caller": ("caller", "caller_id", "caller_number", "caller_extension"),
         "destination": ("callee", "destination", "called_extension"),
         "reason": ("reason", "terminal_reason"),
         "outcome": ("type",),

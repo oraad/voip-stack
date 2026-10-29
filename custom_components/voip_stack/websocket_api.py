@@ -674,6 +674,7 @@ _CALL_SCOPED_SOFTPHONE_FIELDS = (
     "callee",
     "local_name",
     "peer_name",
+    "caller_id",
     "dialed_target",
     "connected_party",
     "answered_by",
@@ -1044,6 +1045,7 @@ def _ha_softphone_state(hass: HomeAssistant, endpoint_id: str) -> dict[str, Any]
         "direction": direction,
         "role": store.get("role", ""),
         "call_id": call_id,
+        "caller_id": store.get("caller_id", ""),
         "sequence": event_context.sequence if event_context is not None else 0,
         "revision": session.revision if session is not None else 0,
         "owner": session.owner if session is not None else "",
@@ -1149,6 +1151,7 @@ def _set_ha_softphone_call_state(
 ) -> None:
     endpoint_id = _endpoint_store_id(endpoint_id)
     store = _ha_softphone_store(hass, endpoint_id)
+    stored_caller_id = str(store.get("caller_id") or "")
     state = _sip_public_state(state)
     local_name = str(extra.pop("local_name", _ha_peer_name(hass)))
     terminal = state in {
@@ -1218,8 +1221,11 @@ def _set_ha_softphone_call_state(
             store["last_sip_event"] = extra["last_sip_event"]
         if extra.get("last_sip_reason"):
             store["last_sip_reason"] = extra["last_sip_reason"]
+        stored_caller_id = str(store.get("caller_id") or "")
         for key in _CALL_SCOPED_SOFTPHONE_FIELDS:
             store.pop(key, None)
+        if stored_caller_id:
+            store["caller_id"] = stored_caller_id
         store["state"] = state
         store["sip_state"] = state
     else:
@@ -1227,6 +1233,7 @@ def _set_ha_softphone_call_state(
             for key in _MEDIA_COUNTER_KEYS:
                 store[key] = 0
             store["media_debug"] = {}
+            store.pop("caller_id", None)
         for key in (
             "last_terminal_call_id",
             "last_terminal_direction",
@@ -1258,6 +1265,8 @@ def _set_ha_softphone_call_state(
         for key, value in extra.items()
         if value not in (None, "") or key in {"target_device_id", "target_endpoint_id"}
     })
+    if not payload.get("caller_id") and stored_caller_id:
+        payload["caller_id"] = stored_caller_id
     if terminal and store.get("terminal_reason"):
         payload["terminal_reason"] = store["terminal_reason"]
     if terminal and store.get("last_terminal_dialed_target"):
@@ -1337,6 +1346,9 @@ def _set_sip_bridge_call_state(
         "target": target or callee,
         "terminal_reason": extra.get("terminal_reason") or extra.get("reason") or "",
     }
+    caller_id = extra.pop("caller_id", "")
+    if caller_id:
+        payload["caller_id"] = caller_id
     payload.update({k: v for k, v in extra.items() if v not in (None, "")})
     store.update(payload)
     if terminal:

@@ -272,13 +272,19 @@ def _bridge_event(hass: HomeAssistant, event: LocalBridgeEvent) -> None:
         )
         registry.remove_leg(snapshot.call_id, f"local:{event.endpoint_id}")
     if event.event_type in {LocalBridgeEventType.STARTED, LocalBridgeEventType.REDIRECTED}:
+        caller_endpoint = _endpoint(hass, snapshot.caller_endpoint_id)
         registry.upsert(
             snapshot.call_id,
             state="ringing",
             owner="local_bridge",
             caller=_name(
-                _endpoint(hass, snapshot.caller_endpoint_id),
+                caller_endpoint,
                 snapshot.caller_endpoint_id,
+            ),
+            caller_id=str(
+                getattr(caller_endpoint, "sip_uri_user", "")
+                if caller_endpoint is not None
+                else ""
             ),
             callee=_name(
                 _endpoint(hass, snapshot.callee_endpoint_id),
@@ -495,7 +501,8 @@ class PendingLocalSource:
             source_host=local_ip, source_port=sip_port,
             request_uri=sip.SipUri(callee.sip_uri_user if callee else session.callee, local_ip, sip_port),
             caller_uri=sip.SipUri(caller.sip_uri_user, local_ip, sip_port),
-            target=callee.name if callee else session.callee, caller=caller.name, call_id=session.call_id,
+            target=callee.name if callee else session.callee, caller=caller.name,
+            caller_id=caller.sip_uri_user, call_id=session.call_id,
             cseq="1 INVITE", remote_sdp=b"",
             send_format=sdp.audio_format_to_rtp(rtp_format, 96),
             recv_format=sdp.audio_format_to_rtp(rtp_format, 96),

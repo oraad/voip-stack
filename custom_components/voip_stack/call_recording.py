@@ -77,7 +77,8 @@ class CallRecording:
             _publish_recording_state(self.hass, self.session)
             event = {"call_id": self.session.call_id, "recording_id": self.writer.identity,
                 "device_id": self.endpoint.device_id, "endpoint_id": self.endpoint.endpoint_id,
-                "caller": self.session.caller, "callee": self.session.callee,
+                "caller": self.session.caller, "caller_id": str(self.session.metadata.get("caller_id") or ""),
+                "callee": self.session.callee,
                 "status": self.result["status"] if self.result is not None else "failed" if self.error else "empty",
                 "error": self.error}
             if self.result is not None:

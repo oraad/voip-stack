@@ -91,6 +91,7 @@ class SipInvite:
     received_via_trunk: bool = False
     peer_profile: str = ""
     caller_route: str = ""
+    caller_id: str = ""
     target_route: str = ""
     initial_response_sent: bool = False
     trunk_id: str = ""
@@ -144,6 +145,7 @@ class SipInitialInvite:
     received_via_trunk: bool = False
     peer_profile: str = ""
     caller_route: str = ""
+    caller_id: str = ""
     target_route: str = ""
     trunk_id: str = ""
     replaces: sip_transfer.SipReplaces | None = None
@@ -160,6 +162,11 @@ class SipInitialInvite:
     @property
     def routing_target(self) -> str:
         return str(self.target_route or self.target or self.request_uri.user).strip()
+
+
+def sip_caller_id(invite: SipInvite | SipInitialInvite | object) -> str:
+    """Return the raw SIP caller identity if the invite object carries one."""
+    return str(getattr(invite, "caller_id", "") or "").strip()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1781,6 +1788,7 @@ class SipUdpEndpoint(asyncio.DatagramProtocol):
                 trunk_id=initial.trunk_id,
                 peer_profile=initial.peer_profile,
                 caller_route=initial.caller_route,
+                caller_id=initial.caller_id,
                 target_route=initial.target_route,
                 initial_response_sent=True,
             )
@@ -3585,6 +3593,7 @@ class SipUdpEndpoint(asyncio.DatagramProtocol):
                 peer_profile=profile,
                 replaces=sip_transfer.request_replaces(request),
                 caller_route=caller_route,
+                caller_id=caller_route,
                 target_route=target_route,
             )
             previous = self.active_dialogs.get(initial.call_id) or self.pending_invites.get(initial.call_id)
@@ -3713,6 +3722,7 @@ class SipUdpEndpoint(asyncio.DatagramProtocol):
                 target=initial.target,
                 caller=initial.caller,
                 caller_route=initial.caller_route,
+                caller_id=initial.caller_id,
                 target_route=initial.target_route,
                 call_id=initial.call_id,
                 cseq=initial.cseq,

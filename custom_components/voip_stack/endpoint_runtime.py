@@ -74,6 +74,7 @@ from .runtime_data import (
     sip_endpoint_manager,
     sip_trunk,
 )
+from .sip_listener import sip_caller_id
 from .store import sip_accounts as _sip_accounts
 from .trunk_inbound_router import (
     TrunkInboundRuntime,
@@ -343,7 +344,8 @@ async def async_start_sip_endpoint(hass: HomeAssistant) -> bool:
             endpoint_id,
             CallState.RINGING.value,
             leg_id=f"browser:{endpoint_id}",
-            peer_name=invite.caller, direction="incoming",
+            peer_name=invite.caller, caller_id=sip_caller_id(invite),
+            direction="incoming",
             dialed_target=invite.target,
             selected_tx_format=invite.send_format.audio_format.wire_token(),
             selected_rx_format=invite.recv_format.audio_format.wire_token(),
@@ -383,6 +385,7 @@ async def async_start_sip_endpoint(hass: HomeAssistant) -> bool:
             invite.call_id,
             state=CallState.RINGING.value,
             caller=invite.caller,
+            caller_id=sip_caller_id(invite),
             callee=callee or invite.target,
             route_kind=route_kind,
             owner="ha_softphone",
@@ -635,6 +638,8 @@ async def async_start_sip_endpoint(hass: HomeAssistant) -> bool:
             ),
             target=group_name,
             caller=local_name,
+            caller_route=local_name,
+            caller_id=local_name,
             call_id=call_id,
             cseq="1 INVITE",
             remote_sdp=b"",
@@ -649,6 +654,7 @@ async def async_start_sip_endpoint(hass: HomeAssistant) -> bool:
             state=CallState.REMOTE_RINGING.value,
             owner="ha_softphone",
             caller=local_name,
+            caller_id=local_name,
             callee=group_name,
             route_kind=GROUP_TYPE_RING,
             endpoint_id=endpoint_id,
@@ -771,6 +777,7 @@ async def async_start_sip_endpoint(hass: HomeAssistant) -> bool:
             state=CallState.CONNECTING.value,
             owner="router",
             caller=initial.caller,
+            caller_id=sip_caller_id(initial),
             callee=initial.target,
             ingress="trunk" if initial.received_via_trunk else "extension",
             origin="trunk" if initial.received_via_trunk else "extension",

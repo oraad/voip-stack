@@ -8,7 +8,7 @@ import importlib.util
 import sys
 import types
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 from pathlib import Path
 
 from tests.support.voip_matrix import (
@@ -140,6 +140,7 @@ fsm = _load_module("fsm")
 const = _load_module("const")
 conference = _load_module("conference")
 route_decisions = _load_module("route_decisions")
+dtmf_events = _load_module("dtmf_events")
 runtime_data_module = _load_module("runtime_data")
 endpoint_registry_module = _load_module("endpoint_registry")
 endpoint_lifecycle_module = _load_module("endpoint_lifecycle")
@@ -343,6 +344,36 @@ class GroupCallMatrixTest(unittest.TestCase):
         recovered = websocket_api._ha_softphone_state(hass, "default")
         self.assertEqual(recovered["video_status"], "active")
         self.assertEqual(recovered["video_failure_reason"], "")
+
+    def test_softphone_state_falls_back_to_stored_caller_id(self) -> None:
+        hass = _FakeHass()
+        websocket_api._set_ha_softphone_call_state(
+            hass,
+            fsm.CallState.RINGING.value,
+            endpoint_id="default",
+            call_id="trunk-call",
+            direction="incoming",
+            caller="Alex Mobile",
+            caller_id="+12025550100",
+            callee="Casa",
+        )
+        ringing = websocket_api._ha_softphone_state(hass, "default")
+        self.assertEqual(ringing["caller_id"], "+12025550100")
+
+        # A terminal update that does not resupply caller_id still keeps the raw
+        # SIP identity available for the UI and automations.
+        websocket_api._set_ha_softphone_call_state(
+            hass,
+            fsm.CallState.IDLE.value,
+            endpoint_id="default",
+            call_id="trunk-call",
+            direction="incoming",
+            caller="",
+            callee="",
+            reason="ended",
+        )
+        terminal = websocket_api._ha_softphone_state(hass, "default")
+        self.assertEqual(terminal["caller_id"], "+12025550100")
 
     def test_call_event_preserves_explicit_local_leg_owner(self) -> None:
         hass = _FakeHass()
@@ -1079,6 +1110,73 @@ class GroupCallMatrixTest(unittest.TestCase):
 
         state = websocket_api._ha_softphone_state(hass, "test")
         self.assertEqual(state["call_id"], "live-call")
+
+    def test_phone_projection_includes_caller_id_from_session_metadata(self) -> None:
+        """A replaced trunk display name must not lose the raw SIP identity on the phone."""
+        hass = _FakeHass()
+        registry = websocket_api.call_registry(hass)
+        endpoint = _load_module("phone_endpoint").PhoneEndpoint(
+            endpoint_id="test",
+            name="Test",
+            kind="browser",
+        )
+        hass.runtime.endpoints.register(endpoint)
+        session = registry.upsert(
+            "trunk-call",
+            state=fsm.CallState.RINGING.value,
+            owner="ha_softphone",
+            caller="Alex Mobile",
+            caller_id="+12025550100",
+            callee="Casa",
+        )
+        registry.claim_endpoint("trunk-call", "test", role="ha_softphone")
+
+        self.assertTrue(
+            call_projection.publish_phone_projection(
+                hass, session, "test", direction="incoming"
+            )
+        )
+
+        state = websocket_api._ha_softphone_state(hass, "test")
+        self.assertEqual(state["caller"], "Alex Mobile")
+        self.assertEqual(state["caller_id"], "+12025550100")
+
+    def test_dtmf_bridge_event_falls_back_to_session_caller_id(self) -> None:
+        """DTMF emitted after a phonebook name replacement still carries the raw number."""
+        hass = _FakeHass()
+        registry = websocket_api.call_registry(hass)
+        registry.upsert(
+            "trunk-call",
+            state=fsm.CallState.IN_CALL.value,
+            owner="bridge",
+            caller="Alex Mobile",
+            caller_id="+12025550100",
+            callee="Casa",
+        )
+
+        relay = types.SimpleNamespace(
+            relay_dtmf=MagicMock(),
+            on_dtmf=None,
+            on_dtmf_fallback=None,
+        )
+        dtmf_events.attach_dtmf_event_bridge(
+            hass,
+            relay,
+            call_id="trunk-call",
+            dest_call_id="dest-call",
+            caller="Alex Mobile",
+            callee="Casa",
+        )
+        assert relay.on_dtmf is not None
+        relay.on_dtmf("left", "5", "rfc4733")
+
+        dtmf_events_list = [
+            event for event_type, event in hass.bus.events if event_type == websocket_api.SIP_DTMF_EVENT
+        ]
+        self.assertEqual(len(dtmf_events_list), 1)
+        self.assertEqual(dtmf_events_list[0]["caller"], "Alex Mobile")
+        self.assertEqual(dtmf_events_list[0]["caller_id"], "+12025550100")
+        self.assertEqual(dtmf_events_list[0]["digit"], "5")
 
     def test_softphone_sink_never_changes_endpoint_ownership(self) -> None:
         hass = _FakeHass()

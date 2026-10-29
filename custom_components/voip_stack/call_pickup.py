@@ -141,6 +141,8 @@ async def prepare_sip_pickup(hass, incoming, target, local_ip, *, call_id="", ge
     ) or registry.resource_for(session.call_id, "parking")
     if native is not None:
         source = native.invite
+        if not session.metadata.get("caller_id"):
+            session.update_metadata(caller_id=native.caller_id)
     if session.owner == "local_bridge":
         bridge = local_softphone_bridge(hass)
         local_source = PendingLocalSource(
@@ -487,6 +489,7 @@ async def prepare_sip_pickup(hass, incoming, target, local_ip, *, call_id="", ge
             response_context=hass,
             owner="bridge",
             caller=session.caller,
+            caller_id=str(session.metadata.get("caller_id") or ""),
             callee=incoming.caller,
             route_kind="pickup",
             source_endpoint_id=str(session.metadata.get("source_endpoint_id") or ""),
@@ -499,7 +502,9 @@ async def prepare_sip_pickup(hass, incoming, target, local_ip, *, call_id="", ge
             )
         registry.set_bridge_link(session.call_id, incoming.call_id)
         session.update_metadata(
-            target_endpoint_id=picker, connected_party=incoming.caller
+            target_endpoint_id=picker,
+            connected_party=incoming.caller,
+            caller_id=str(session.metadata.get("caller_id") or ""),
         )
         (
             relay.left.can_send,
@@ -513,6 +518,7 @@ async def prepare_sip_pickup(hass, incoming, target, local_ip, *, call_id="", ge
             call_id=session.call_id,
             dest_call_id=incoming.call_id,
             caller=session.caller,
+            caller_id=str(session.metadata.get("caller_id") or ""),
             callee=incoming.caller,
             source_client=application.source_client
             if application is not None

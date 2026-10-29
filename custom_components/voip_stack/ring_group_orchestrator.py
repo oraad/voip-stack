@@ -76,6 +76,8 @@ if TYPE_CHECKING:
     from .roster import RosterEntry
     from .sip_listener import SipInvite
 
+from .sip_listener import sip_caller_id
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -172,6 +174,7 @@ async def run_ring_group_call(
         browser_legs,
         call_id=invite.call_id,
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=entry.display_name,
         route_kind=GROUP_TYPE_RING,
     )
@@ -545,6 +548,7 @@ async def run_ring_group_call(
                     response_context=hass,
                     owner="ha_softphone",
                     caller=invite.caller,
+                    caller_id=sip_caller_id(invite),
                     callee=entry.display_name,
                     route_kind=GROUP_TYPE_RING,
                     endpoint_id=winner.endpoint_id,
@@ -566,6 +570,7 @@ async def run_ring_group_call(
                 CallState.IN_CALL.value,
                 leg_id=winner_leg_id,
                 peer_name=invite.caller,
+                caller_id=sip_caller_id(invite),
                 direction="incoming",
                 selected_tx_format=invite.send_format.audio_format.wire_token(),
                 selected_rx_format=invite.recv_format.audio_format.wire_token(),
@@ -644,6 +649,7 @@ async def run_ring_group_call(
             BridgeCommitPolicy(
                 route_kind=GROUP_TYPE_RING,
                 caller=invite.caller,
+                caller_id=sip_caller_id(invite),
                 callee=dialed_target,
                 connected_party=connected_party,
                 ingress=call_ingress,

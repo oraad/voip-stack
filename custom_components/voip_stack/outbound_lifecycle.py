@@ -68,6 +68,7 @@ def attach_outbound_connected_identity_state(
                 state=session.state,
                 owner=session.owner,
                 caller=session.caller,
+                caller_id=str(session.metadata.get("caller_id") or ""),
                 callee=session.callee,
                 route_kind=session.route_kind,
                 connected_party=connected_party,
@@ -75,10 +76,10 @@ def attach_outbound_connected_identity_state(
             )
             publish_phone_projection(
                 hass, session, endpoint_id, peer_name=connected_party,
-                    connected_party=connected_party,
-                    direction=str(store.get("direction") or "outgoing"),
-                    target_device_id=str(store.get("target_device_id") or ""),
-                    remote_uri=connected_uri, last_sip_event="UPDATE",
+                connected_party=connected_party,
+                direction=str(store.get("direction") or "outgoing"),
+                target_device_id=str(store.get("target_device_id") or ""),
+                remote_uri=connected_uri, last_sip_event="UPDATE",
             )
 
     client.on_connected_identity = _update

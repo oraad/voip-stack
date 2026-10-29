@@ -19,10 +19,15 @@ Every call has these layers:
 - SIP identity: URI users provide stable routes, quoted display names preserve
   human names, and RFC 4916 can report the selected callee after answer.
 
-Incoming caller text always comes from the standard SIP `From` identity. The
-phonebook helps route the call but does not rename the caller. If an endpoint
-answers a call that was dialed by extension, its canonical name can be returned
-in a connected-identity UPDATE after the initial ACK.
+Incoming caller text starts from the standard SIP `From` identity. A provider-
+supplied display name is authoritative and is never replaced. When a trunk
+caller supplies only the public number as its display identity, HA may resolve
+that number against the central phonebook and use the contact name for
+presentation; the original number remains available as `caller_id` for
+automation filters and diagnostics. The resolved name is presentation only,
+not caller authentication. If an endpoint answers a call that was dialed by
+extension, its canonical name can be returned in a connected-identity UPDATE
+after the initial ACK.
 
 ## ESP to ESP direct
 

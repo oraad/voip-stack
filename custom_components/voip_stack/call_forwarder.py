@@ -86,6 +86,7 @@ from .core.sip import sip_default_port
 from .session_cleanup import async_cleanup_sip_runtime
 from .service_errors import service_error as _service_error
 from .sip_client import SIP_TIMER_B
+from .sip_listener import sip_caller_id
 from .sip_runtime import (
     send_final_response as _sip_send_final_response,
 )
@@ -571,6 +572,7 @@ async def async_forward_existing_call(
             response_context=hass,
             owner=owner,
             caller=invite.caller,
+            caller_id=sip_caller_id(invite),
             callee=callee,
             route_kind=route_kind,
             response_already_sent=response_already_sent or local_source is not None,
@@ -766,6 +768,7 @@ async def async_forward_existing_call(
                     browser_legs,
                     call_id=call_id,
                     caller=invite.caller,
+                    caller_id=sip_caller_id(invite),
                     callee=entry.display_name,
                     route_kind=GROUP_TYPE_RING,
                 )
@@ -858,6 +861,7 @@ async def async_forward_existing_call(
                         state=CallState.RINGING.value,
                         owner="router",
                         caller=invite.caller,
+                        caller_id=sip_caller_id(invite),
                         callee=entry.display_name,
                         route_kind=GROUP_TYPE_RING,
                         ring_endpoint_ids=tuple(
@@ -879,6 +883,7 @@ async def async_forward_existing_call(
                         call_id,
                         state=CallState.REMOTE_RINGING.value,
                         caller=invite.caller,
+                        caller_id=sip_caller_id(invite),
                         callee=entry.display_name,
                         route_kind=GROUP_TYPE_RING,
                     )
@@ -985,6 +990,7 @@ async def async_forward_existing_call(
                         state=CallState.RINGING.value,
                         owner="ha_softphone",
                         caller=invite.caller,
+                        caller_id=sip_caller_id(invite),
                         callee=entry.display_name,
                         route_kind=GROUP_TYPE_RING,
                         endpoint_id=winner.endpoint_id,
@@ -1060,6 +1066,7 @@ async def async_forward_existing_call(
                     BridgeCommitPolicy(
                         route_kind=GROUP_TYPE_RING,
                         caller=invite.caller,
+                        caller_id=sip_caller_id(invite),
                         callee=entry.display_name,
                         connected_party=connected_party,
                         source_role=(
@@ -1322,6 +1329,7 @@ async def async_forward_existing_call(
                     call_id,
                     state=CallState.REMOTE_RINGING.value,
                     caller=invite.caller,
+                    caller_id=sip_caller_id(invite),
                     callee=destination,
                 )
                 if ringing_session is not None:
@@ -1364,6 +1372,7 @@ async def async_forward_existing_call(
                 BridgeCommitPolicy(
                     route_kind=decision.action.value,
                     caller=invite.caller,
+                    caller_id=sip_caller_id(invite),
                     callee=destination,
                     connected_party=destination,
                     source_role="trunk" if preanswered is not None else "caller",

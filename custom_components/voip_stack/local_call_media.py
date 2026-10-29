@@ -67,6 +67,7 @@ class ApplicationCallSource(LocalAudioContract):
     """
 
     caller: str = ""
+    caller_id: str = ""
     routing_caller: str = ""
     target: str = ""
     source_host: str = ""
@@ -84,11 +85,11 @@ class ApplicationCallSource(LocalAudioContract):
     send_dtmf_events: frozenset[int] | None = None
 
     @classmethod
-    def from_client(cls, client, *, call_id, caller, target="", trunk_id=""):
-        return cls.from_peer_dialog(client.dialog, call_id=call_id, caller=caller, target=target, trunk_id=trunk_id)
+    def from_client(cls, client, *, call_id, caller, caller_id="", target="", trunk_id=""):
+        return cls.from_peer_dialog(client.dialog, call_id=call_id, caller=caller, caller_id=caller_id, target=target, trunk_id=trunk_id)
 
     @classmethod
-    def from_peer_dialog(cls, dialog, *, call_id, caller, target="", trunk_id=""):
+    def from_peer_dialog(cls, dialog, *, call_id, caller, caller_id="", target="", trunk_id=""):
         from .core.sip import parse_sip_uri
 
         if dialog is None or dialog.video_format is not None:
@@ -96,7 +97,8 @@ class ApplicationCallSource(LocalAudioContract):
         base = LocalAudioContract.from_dialog(dialog)
         fields = {name: getattr(base, name) for name in LocalAudioContract.__dataclass_fields__}
         fields["call_id"] = call_id
-        return cls(**fields, caller=caller, routing_caller=parse_sip_uri(dialog.remote_uri).user,
+        return cls(**fields, caller=caller, caller_id=caller_id,
+            routing_caller=parse_sip_uri(dialog.remote_uri).user,
             target=target, source_host=dialog.remote_host, source_port=dialog.remote_sip_port,
             received_via_trunk=bool(trunk_id), trunk_id=trunk_id,
             remote_audio_direction=dialog.remote_audio_direction,

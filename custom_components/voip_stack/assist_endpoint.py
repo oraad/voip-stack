@@ -23,6 +23,7 @@ from .endpoint_session import CallToken
 from .fsm import CallState, TerminalReason
 from .pbx_routing import roster_entry_for_target
 from .router import RouteAction
+from .sip_listener import sip_caller_id
 
 if TYPE_CHECKING:
     from .media_ports import RtpPortReservation
@@ -67,7 +68,8 @@ class AssistEndpoint:
                 None,
             )
         caller_id = str(
-            invite.routing_caller
+            sip_caller_id(invite)
+            or invite.routing_caller
             or invite.source_host
             or "Unknown"
         ).strip()
@@ -146,6 +148,7 @@ class AssistEndpoint:
             state=CallState.IN_CALL.value,
             owner="assist",
             caller=caller_name,
+            caller_id=caller_id,
             callee=destination_name,
             route_kind=RouteAction.ASSIST.value,
             ingress=call_ingress,

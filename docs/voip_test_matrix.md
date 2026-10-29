@@ -192,6 +192,9 @@ snapshots.
 - A caller with display name `Dio Cane` remains exactly `Dio Cane` on the
   receiving card and ESP. Spaces must not become underscores, and roster data
   must not replace the peer's valid `From` display name.
+- A trunk caller whose `From` display is only its public number can be resolved
+  to the matching phonebook contact name for the card, ESP and Logbook while the
+  raw number remains available as `caller_id` for automation filters.
 - A caller that dials a numeric extension receives the selected endpoint's
   canonical name through connected identity when RFC 4916 is supported.
 - A Wildix-routed call delivers `0123456789*#` in order through the negotiated

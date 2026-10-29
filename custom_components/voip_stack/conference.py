@@ -41,7 +41,7 @@ from .runtime_data import (
 )
 from .sip_client import RtpPayloadEncoder
 from .rtp_audio_receiver import RtpAudioReceiver
-from .sip_listener import SipInvite, SipInviteResult
+from .sip_listener import SipInvite, SipInviteResult, sip_caller_id
 from .websocket_api import _fire_call_event
 from .phone_endpoint import EndpointAvailability
 
@@ -634,10 +634,13 @@ class ConferenceRoom:
             raise ValueError(f"endpoint {endpoint_id!r} is not a browser phone")
         self._ha_softphone_announced[call_id] = endpoint_id
         registry = call_registry(self.hass)
+        caller_name = str(caller or getattr(invite, "caller", "") or self.name)
+        caller_id = sip_caller_id(invite)
         session = registry.transition(
             call_id,
             state=CallState.RINGING.value,
-            caller=str(caller or getattr(invite, "caller", "") or self.name),
+            caller=caller_name,
+            caller_id=caller_id,
             callee=str(target or getattr(invite, "target", "") or self.name),
         )
         if session is None:
@@ -646,7 +649,7 @@ class ConferenceRoom:
         observe_phone_leg_projection(
             self.hass, registry, session, endpoint_id, CallState.RINGING.value,
             leg_id=leg_id,
-            peer_name=session.caller, direction="incoming",
+            peer_name=session.caller, caller_id=caller_id, direction="incoming",
             route_kind=GROUP_TYPE_CONFERENCE, sip_status_code=180,
             last_sip_event="INVITE",
         )
@@ -800,6 +803,7 @@ class ConferenceManager:
             state=state,
             owner="ha_softphone",
             caller=room_name,
+            caller_id=room_name,
             callee=endpoint.name,
             route_kind=GROUP_TYPE_CONFERENCE,
             endpoint_id=endpoint_id,

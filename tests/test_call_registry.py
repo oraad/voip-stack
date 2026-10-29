@@ -635,6 +635,66 @@ class CallRegistryEventContextTest(unittest.TestCase):
         )
         self.assertNotIn("caller", fields)
 
+    def test_event_fields_expose_raw_caller_id(self) -> None:
+        registry = _registry()
+        registry.upsert(
+            "call-1",
+            state="ringing",
+            caller="Alex Mobile",
+            caller_id="+12025550100",
+        )
+
+        fields = _observed_event_fields(registry, "call-1", "ringing")
+
+        self.assertEqual(fields["caller_id"], "+12025550100")
+        self.assertNotIn("caller", fields)
+
+    def test_caller_id_survives_session_transition_and_bridge(self) -> None:
+        registry = _registry()
+        registry.upsert(
+            "call-1",
+            state="ringing",
+            caller="Alex Mobile",
+            caller_id="+12025550100",
+        )
+
+        registry.transition("call-1", state="in_call", owner="bridge")
+        registry.register_bridge(
+            source_call_id="call-1",
+            dest_call_id="dest-1",
+            client=object(),
+            state="connecting",
+            caller_id="+12025550100",
+        )
+
+        fields = _observed_event_fields(registry, "call-1", "in_call")
+
+        self.assertEqual(fields["caller_id"], "+12025550100")
+
+    def test_caller_id_is_not_erased_by_empty_upsert_or_bridge_register(self) -> None:
+        registry = _registry()
+        registry.upsert(
+            "call-1",
+            state="ringing",
+            caller="Alex Mobile",
+            caller_id="+12025550100",
+        )
+
+        registry.upsert("call-1", state="in_call", caller="Alex Mobile", caller_id="")
+        registry.register_bridge(
+            source_call_id="call-1",
+            dest_call_id="dest-1",
+            client=object(),
+            state="connecting",
+            caller="Alex Mobile",
+        )
+
+        session = registry.sessions.get(registry.resolve_session_id("call-1"))
+        self.assertIsNotNone(session)
+        self.assertEqual(session.metadata.get("caller_id"), "+12025550100")
+        fields = _observed_event_fields(registry, "call-1", "in_call")
+        self.assertEqual(fields["caller_id"], "+12025550100")
+
     def test_stale_revision_or_owner_cannot_mutate_session(self) -> None:
         registry = _registry()
         session = registry.upsert("call-1", state="ringing", owner="ha_softphone")
