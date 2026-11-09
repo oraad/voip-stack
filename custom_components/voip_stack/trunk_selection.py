@@ -56,28 +56,6 @@ def resolve_trunk_selector(hass, value: str) -> str:
     raise ServiceValidationError("Select an existing SIP trunk")
 
 
-def trunk_display_name(hass, identity: str) -> str:
-    """Return the current subentry title for one stable trunk identity."""
-    entry = config_entry(hass)
-    if entry is None or not identity:
-        return ""
-    for record in trunk_subentries(entry):
-        if trunk_identity(record) == identity:
-            return str(record.title or "")
-    return ""
-
-
-def add_trunk_names(hass, payload: dict) -> None:
-    """Attach current display names without changing stable trunk identities."""
-    for direction in ("inbound", "outbound"):
-        identity = str(payload.get(f"{direction}_trunk_id") or "").strip()
-        if not identity or payload.get(f"{direction}_trunk_name"):
-            continue
-        name = trunk_display_name(hass, identity)
-        if name:
-            payload[f"{direction}_trunk_name"] = name
-
-
 def select_call_trunk(hass, *, requested: str = "", endpoint_id: str = "", inherited: str = "") -> TrunkSelection:
     runtime = require_runtime_data(hass)
     endpoint = runtime.endpoints.get(endpoint_id) if endpoint_id else None

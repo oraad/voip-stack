@@ -124,7 +124,14 @@ async def async_commit_outbound_bridge(
         key: value
         for key, value in (
             ("inbound_trunk_id", str(getattr(invite, "trunk_id", "") or "")),
-            ("outbound_trunk_id", str(getattr(winner, "trunk_id", "") or "")),
+            (
+                "outbound_trunk_id",
+                str(
+                    getattr(winner, "trunk_id", "")
+                    or getattr(invite, "outbound_trunk_id", "")
+                    or ""
+                ),
+            ),
         )
         if value
     }
@@ -157,6 +164,8 @@ async def async_commit_outbound_bridge(
     elif not registry.is_generation_current(invite.call_id, session.generation):
         return None
     elif trunk_metadata:
+        if not session.live:
+            return None
         missing = {
             key: value
             for key, value in trunk_metadata.items()

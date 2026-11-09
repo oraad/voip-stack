@@ -142,7 +142,7 @@ def publish_dtmf_event(
     }
     payload.update(registry.event_fields(call_id, state))
     if payload.get("inbound_trunk_id") or payload.get("outbound_trunk_id"):
-        from .trunk_selection import add_trunk_names
+        from .trunk_events import add_trunk_names
 
         add_trunk_names(hass, payload)
     context = registry.ha_context(call_id)

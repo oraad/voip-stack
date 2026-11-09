@@ -236,6 +236,7 @@ class CallEventContext:
     duration_seconds: int | None = None
     terminal_summary_claimed: bool = False
     terminal_endpoint_ids: frozenset[str] = field(default_factory=frozenset)
+    # Mirrored at retirement so terminal events keep their trunk topology.
     terminal_inbound_trunk_id: str = ""
     terminal_outbound_trunk_id: str = ""
     trigger_sequences: WeakKeyDictionary[object, tuple[int, str]] | None = field(default=None, repr=False)

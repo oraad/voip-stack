@@ -289,7 +289,7 @@ def _fire_call_event(
             registry_fields.pop(owner_key, None)
     event.update(registry_fields)
     if event.get("inbound_trunk_id") or event.get("outbound_trunk_id"):
-        from .trunk_selection import add_trunk_names
+        from .trunk_events import add_trunk_names
 
         add_trunk_names(hass, event)
     call_origin = canonical_call_origin(

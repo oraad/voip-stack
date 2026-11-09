@@ -522,6 +522,15 @@ class CallRegistryEventContextTest(unittest.TestCase):
         self.assertNotIn("inbound_trunk_id", fields)
         self.assertNotIn("outbound_trunk_id", fields)
 
+    def test_blank_live_trunk_metadata_falls_back_to_terminal_summary(self) -> None:
+        registry = _registry()
+        context = pbx_runtime.CallEventContext()
+        context.terminal_inbound_trunk_id = "home"
+
+        fields = registry._event_trunk_fields({"inbound_trunk_id": "   "}, context)
+
+        self.assertEqual(fields["inbound_trunk_id"], "home")
+
     def test_terminal_event_keeps_trunk_identities(self) -> None:
         registry = _registry()
         registry.upsert(

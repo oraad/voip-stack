@@ -38,8 +38,8 @@ def _load_dtmf_events(monkeypatch):
     runtime_data.sip_endpoint_manager = lambda _hass: None
     websocket = types.ModuleType("custom_components.voip_stack.websocket_api")
     websocket.SIP_DTMF_EVENT = "voip_stack.dtmf"
-    trunk_selection = types.ModuleType("custom_components.voip_stack.trunk_selection")
-    trunk_selection.add_trunk_names = lambda _hass, payload: payload.update(
+    trunk_events = types.ModuleType("custom_components.voip_stack.trunk_events")
+    trunk_events.add_trunk_names = lambda _hass, payload: payload.update(
         {
             key.replace("_trunk_id", "_trunk_name"): "Home"
             for key in ("inbound_trunk_id", "outbound_trunk_id")
@@ -57,7 +57,7 @@ def _load_dtmf_events(monkeypatch):
         "custom_components.voip_stack.endpoint_lifecycle": lifecycle,
         "custom_components.voip_stack.fsm": fsm,
         "custom_components.voip_stack.runtime_data": runtime_data,
-        "custom_components.voip_stack.trunk_selection": trunk_selection,
+        "custom_components.voip_stack.trunk_events": trunk_events,
         "custom_components.voip_stack.websocket_api": websocket,
     }.items():
         monkeypatch.setitem(sys.modules, name, module)

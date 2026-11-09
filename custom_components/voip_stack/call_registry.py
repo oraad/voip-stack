@@ -124,7 +124,10 @@ class CallRuntimeApi:
         return {
             key: value
             for key in _EVENT_TRUNK_KEYS
-            if (value := str(metadata.get(key) or terminal[key] or "").strip())
+            if (
+                value := str(metadata.get(key) or "").strip()
+                or str(terminal[key] or "").strip()
+            )
         }
 
     def artifact_for(self, call_id: str, name: str) -> Any | None:

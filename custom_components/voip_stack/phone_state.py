@@ -149,7 +149,7 @@ class PhoneStateObserver:
                   "event_type": "state_changed", "scope": "call_commit",
                   **registry.event_fields(snapshot.call_id, snapshot.state)}
         if fields.get("inbound_trunk_id") or fields.get("outbound_trunk_id"):
-            from .trunk_selection import add_trunk_names
+            from .trunk_events import add_trunk_names
 
             add_trunk_names(self.hass, fields)
         return fields

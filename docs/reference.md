@@ -386,6 +386,8 @@ and Device IDs, stable `ingress` / `origin` (`trunk` or `extension`),
 SIP trunk, `outbound_trunk_id` / `outbound_trunk_name` when it leaves through
 one, selected media formats, and RTP counters. Trunk IDs are stable configured
 identities; trunk names are current display labels and can change on rename.
+These event IDs are not the `trunk_id` service selector, which also accepts a
+trunk Device ID or its unique display name.
 Both directions can appear on one call when a trunk call is forwarded or bridged
 through another line. Native triggers accept `inbound_trunk_id` and
 `outbound_trunk_id` filters.
