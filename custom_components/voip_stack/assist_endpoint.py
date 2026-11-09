@@ -150,6 +150,11 @@ class AssistEndpoint:
             route_kind=RouteAction.ASSIST.value,
             ingress=call_ingress,
             origin=call_ingress,
+            **(
+                {"inbound_trunk_id": str(getattr(invite, "trunk_id", "") or "")}
+                if call_ingress == "trunk" and getattr(invite, "trunk_id", "")
+                else {}
+            ),
         )
         completion_token = session.token
         completion_ready.set()

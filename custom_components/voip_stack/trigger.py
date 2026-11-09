@@ -38,6 +38,8 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Optional("caller"): cv.string,
         vol.Optional("destination"): cv.string,
         vol.Optional("ingress"): vol.In(["trunk", "extension"]),
+        vol.Optional("inbound_trunk_id"): cv.string,
+        vol.Optional("outbound_trunk_id"): cv.string,
         vol.Optional("reason"): cv.string,
         vol.Optional("outcome"): vol.In(["ended", "missed", "failed"]),
         vol.Optional("digit"): vol.In(list("0123456789*#ABCD")),

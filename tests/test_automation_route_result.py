@@ -49,6 +49,7 @@ async def test_route_request_commits_identity_before_projection(monkeypatch, tru
         call_id="call-1",
         caller="Alice",
         target="601",
+        trunk_id="provider-a",
         source_host="192.0.2.5",
         routing_caller="Alice",
         routing_target="601",
@@ -77,6 +78,10 @@ async def test_route_request_commits_identity_before_projection(monkeypatch, tru
     session = registry.get_session("call-1")
     assert session is not None
     assert (session.caller, session.callee) == ("Alice", "Casa")
+    if trunk_invite:
+        assert session.metadata["inbound_trunk_id"] == "provider-a"
+    else:
+        assert "inbound_trunk_id" not in session.metadata
     assert projected and projected[0][0] is session
 
     assert projected[0][1]["target_route"] == "601"

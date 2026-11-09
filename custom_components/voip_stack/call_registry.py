@@ -56,6 +56,7 @@ _EVENT_IDENTITY_KEYS = (
     "device_id", "source_device_id", "dest_device_id", "target_device_id",
     "ingress", "origin",
 )
+_EVENT_TRUNK_KEYS = ("inbound_trunk_id", "outbound_trunk_id")
 
 
 def committed_operation(method):
@@ -111,6 +112,20 @@ class CallRuntimeApi:
         if participants:
             fields["participant_endpoint_ids"] = sorted(participants)
         return fields
+
+    @staticmethod
+    def _event_trunk_fields(
+        metadata: dict[str, Any], context: CallEventContext | None = None
+    ) -> dict[str, Any]:
+        terminal = {
+            "inbound_trunk_id": context.terminal_inbound_trunk_id if context else "",
+            "outbound_trunk_id": context.terminal_outbound_trunk_id if context else "",
+        }
+        return {
+            key: value
+            for key in _EVENT_TRUNK_KEYS
+            if (value := str(metadata.get(key) or terminal[key] or "").strip())
+        }
 
     def artifact_for(self, call_id: str, name: str) -> Any | None:
         session = self.get_session(self.resolve_session_id(call_id))
@@ -261,6 +276,12 @@ class CallRuntimeApi:
         )
         terminal_endpoints.discard("")
         context.terminal_endpoint_ids = frozenset(terminal_endpoints)
+        context.terminal_inbound_trunk_id = str(
+            session.metadata.get("inbound_trunk_id") or ""
+        )
+        context.terminal_outbound_trunk_id = str(
+            session.metadata.get("outbound_trunk_id") or ""
+        )
         self._advance_event_context(context, session.state)
         self.terminated_call_ids[call_id] = (session.generation, context)
         for leg_id in tuple(session.legs):
@@ -457,6 +478,7 @@ class CallRuntimeApi:
                 session.endpoint_claims if session is not None else (),
             )
         )
+        fields.update(self._event_trunk_fields(metadata, context))
         return fields
 
     def claim_terminal_summary(self, call_id: str) -> bool:
@@ -1141,6 +1163,8 @@ class CallRuntimeApi:
         route_kind: str = "",
         ingress: str = "",
         origin: str = "",
+        inbound_trunk_id: str = "",
+        outbound_trunk_id: str = "",
         source_role: LegRole = "caller",
         dest_role: LegRole = "callee",
         source_state: str = "",
@@ -1175,6 +1199,14 @@ class CallRuntimeApi:
             route_kind=route_kind,
             ingress=ingress,
             origin=origin,
+            **{
+                key: value
+                for key, value in (
+                    ("inbound_trunk_id", inbound_trunk_id),
+                    ("outbound_trunk_id", outbound_trunk_id),
+                )
+                if value
+            },
         )
         self.set_bridge_link(source_call_id, dest_call_id)
         self.add_leg(

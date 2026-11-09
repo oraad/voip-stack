@@ -141,14 +141,18 @@ class PhoneStateObserver:
             context=runtime.sip.ha_context(snapshot.call_id),
         ))
 
-    @staticmethod
-    def _call_fields(registry, snapshot):
-        return {"call_id": snapshot.call_id, "generation": snapshot.generation,
-                "sequence": snapshot.sequence, "revision": snapshot.revision,
-                "state": snapshot.state, "caller": snapshot.caller,
-                "callee": snapshot.callee, "route_kind": snapshot.route_kind,
-                "event_type": "state_changed", "scope": "call_commit",
-                **registry.event_fields(snapshot.call_id, snapshot.state)}
+    def _call_fields(self, registry, snapshot):
+        fields = {"call_id": snapshot.call_id, "generation": snapshot.generation,
+                  "sequence": snapshot.sequence, "revision": snapshot.revision,
+                  "state": snapshot.state, "caller": snapshot.caller,
+                  "callee": snapshot.callee, "route_kind": snapshot.route_kind,
+                  "event_type": "state_changed", "scope": "call_commit",
+                  **registry.event_fields(snapshot.call_id, snapshot.state)}
+        if fields.get("inbound_trunk_id") or fields.get("outbound_trunk_id"):
+            from .trunk_selection import add_trunk_names
+
+            add_trunk_names(self.hass, fields)
+        return fields
 
     @callback
     def _endpoint_changed(self, event: EndpointRegistryEvent):

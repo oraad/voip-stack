@@ -20,6 +20,7 @@ from custom_components.voip_stack.phone_control import PhoneAdapterRegistry
 from custom_components.voip_stack.runtime_data import VoipStackRuntime, sip_trunk, sip_trunks
 from custom_components.voip_stack.trunk_config import entry_trunk_configs, entry_default_trunk
 from custom_components.voip_stack.trunk_runtime import async_start_sip_trunk, async_stop_sip_trunk
+from custom_components.voip_stack.trunk_selection import add_trunk_names, trunk_display_name
 
 from .test_invite_router_behavior import _invite
 
@@ -96,6 +97,19 @@ def test_trunk_rename_does_not_change_identity_or_selection(hass, catalog):
     hass.config_entries.async_update_subentry(catalog, work, title="Office provider")
     assert set(entry_trunk_configs(catalog)) == {"home", "work"}
     assert entry_default_trunk(catalog, entry_trunk_configs(catalog)) == "home"
+    assert trunk_display_name(hass, "work") == "Office provider"
+
+
+def test_trunk_names_are_resolved_for_event_payloads(hass, catalog):
+    assert trunk_display_name(hass, "home") == "home"
+    assert trunk_display_name(hass, "") == ""
+    assert trunk_display_name(hass, "missing") == ""
+
+    payload = {"inbound_trunk_id": "home", "outbound_trunk_id": "missing"}
+    add_trunk_names(hass, payload)
+
+    assert payload["inbound_trunk_name"] == "home"
+    assert "outbound_trunk_name" not in payload
 
 
 class Registrar(asyncio.DatagramProtocol):

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "backend_sha": "79c860f9c609d2309947ca0031164127a02077bb",
+  "components": {
+    "esphome-voip-stack": {
+      "repository": "n-IA-hane/esphome-voip-stack",
+      "sha": "7722bcf45765ab55e35307846c1b26e2c4ec413e"
+    },
+    "esphome-audio-stack": {
+      "repository": "n-IA-hane/esphome-audio-stack",
+      "sha": "3787f502d19cfd181df92fee2a920857ef71abcf"
+    },
+    "esphome-runtime-controller": {
+      "repository": "n-IA-hane/esphome-runtime-controller",
+      "sha": "55a1223d22f4b87d36d6a7f98318f419593b8227"
+    },
+    "esphome-esp-video-camera": {
+      "repository": "Psix-anp/esphome-esp-video-camera",
+      "sha": "0814536988d946e0e697cccef5063b208f6df901"
+    }
+  }
+}
