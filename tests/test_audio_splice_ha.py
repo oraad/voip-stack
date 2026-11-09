@@ -277,3 +277,61 @@ class AudioSpliceTest(unittest.IsolatedAsyncioTestCase):
                     if escaped not in (first, second):
                         await escaped.stop()
                     await calls.shutdown()
+
+    async def test_local_transfer_passes_both_trunk_identities(self):
+        from types import SimpleNamespace
+        from unittest.mock import AsyncMock, patch
+        from custom_components.voip_stack.pbx_runtime import SipEndpointRuntime
+        from custom_components.voip_stack.runtime_data import VoipStackRuntime
+        from custom_components.voip_stack.endpoint_registry import EndpointRegistry
+        from custom_components.voip_stack.local_transfer import try_local_audio_transfer
+
+        calls = SipEndpointRuntime(allow_dark_sessions=True)
+        original = calls.upsert("original", owner="bridge", state="in_call")
+        consultation = calls.upsert("consult", owner="bridge", state="in_call")
+        first, second = self.relay(0, []), self.relay(1, [])
+        for session, wire, relay, trunk_id in (
+            (original, "a", first, "source-trunk"),
+            (consultation, "c", second, "dest-trunk"),
+        ):
+            calls.add_leg(session.call_id, wire, role="callee", state="in_call")
+            session.legs[wire].dialog = SimpleNamespace(
+                dialog=object(), close=AsyncMock(), terminate=AsyncMock(),
+                dialog_ids=SimpleNamespace(call_id=wire), on_refer=None,
+                on_media_update=None, on_info_dtmf=None,
+            )
+            session.legs[wire].trunk_id = trunk_id
+            calls.set_bridge_link(session.call_id, wire)
+            calls.attach_relay(session.call_id, relay)
+        runtime = VoipStackRuntime(
+            transport_config={}, assist_config={}, trunk_config={},
+            endpoints=EndpointRegistry(), phones=None, sip=calls,
+        )
+        runtime.rtp_port_pool = {"used": {20000, 20002, 20010, 20012}}
+        hass = SimpleNamespace(
+            config_entries=SimpleNamespace(
+                async_entries=lambda _domain: [SimpleNamespace(runtime_data=runtime)]
+            )
+        )
+        grant = SimpleNamespace(
+            original=original, consultation=consultation,
+            pending_call_id="", endpoint_id="", current=lambda: True,
+        )
+        captured = {}
+
+        def capture_registration(**kwargs):
+            captured.update(kwargs)
+            raise RuntimeError("captured")
+
+        left = first.right_transport
+        try:
+            with patch.object(calls, "register_bridge", side_effect=capture_registration):
+                with self.assertRaisesRegex(RuntimeError, "captured"):
+                    await try_local_audio_transfer(hass, runtime, grant, None)
+            self.assertEqual(captured["inbound_trunk_id"], "source-trunk")
+            self.assertEqual(captured["outbound_trunk_id"], "dest-trunk")
+        finally:
+            escaped = left.get_protocol().relay
+            if escaped not in (first, second):
+                await escaped.stop()
+            await calls.shutdown()
