@@ -1033,6 +1033,10 @@ def build_uas_response(
 ) -> bytes:
     """Build one standards-shaped response shared by every UAS role."""
 
+    extra_headers = tuple(extra_headers)
+    require_100rel = any(
+        name == "Require" and "100rel" in value for name, value in extra_headers
+    )
     vias = request.header_values("Via")
     headers = [("Via", top_via or vias[0])] if vias else []
     headers.extend(("Via", value) for value in vias[1:])
@@ -1052,6 +1056,9 @@ def build_uas_response(
             headers.append(("Contact", f"<{contact_uri}>"))
         if request.method in {"INVITE", "UPDATE"}:
             headers.extend(session_timer_response_headers(request))
+    if (contact_uri and request.method == "INVITE"
+            and 101 <= int(status_code) < 200 and require_100rel):
+        headers.append(("Contact", f"<{contact_uri}>"))
     if request.method == "INVITE" and 101 <= int(status_code) < 300:
         headers.append(("Supported", _contact_supported_options(contact_uri)))
     if body:
