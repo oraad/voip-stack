@@ -21,7 +21,7 @@ def test_pending_browser_source_offers_mono_rtp_without_lowering_sample_rate(mon
     }
     media = {"local_bridge": True}
     registry = SimpleNamespace(
-        get_session=lambda _id: SimpleNamespace(token=object(), call_id="local-call"),
+        get_session=lambda _id: SimpleNamespace(token=object(), call_id="local-call", metadata={}),
         resource_for=lambda *_args: media,
     )
     monkeypatch.setattr(local, "call_registry", lambda _hass: registry)
@@ -168,3 +168,39 @@ async def test_native_automation_takes_browser_caller_without_a_second_sip_call(
             await barrier
         local.async_shutdown_local_softphone_bridge(hass)
         peer.close()
+
+
+def _forked_source(monkeypatch, metadata):
+    phones = {
+        name: PhoneEndpoint(endpoint_id=name, name=name, kind=EndpointKind.BROWSER)
+        for name in ("caller", "callee")
+    }
+    registry = SimpleNamespace(
+        get_session=lambda _id: SimpleNamespace(
+            token=object(), call_id="local-call", metadata=dict(metadata),
+        ),
+        resource_for=lambda *_args: {"local_bridge": True},
+    )
+    monkeypatch.setattr(local, "call_registry", lambda _hass: registry)
+    monkeypatch.setattr(local, "local_softphone_bridge", lambda _hass: object())
+    monkeypatch.setattr(local, "_endpoint", lambda _hass, name: phones[name])
+    return local.PendingLocalSource(
+        object(),
+        SimpleNamespace(call_id="local-call", caller_endpoint_id="caller",
+                        callee_endpoint_id="callee", caller_media_owner_id="caller-owner",
+                        video_requested=False, caller_video_send=False,
+                        callee_state=local.LocalCallState.RINGING),
+        "127.0.0.1", 15060,
+    )
+
+
+def test_pending_browser_source_leg_inbound_from_verbatim(monkeypatch):
+    source = _forked_source(
+        monkeypatch, {"inbound_from_uri": "sip:5550100@sip.tenant-a.example.test"}
+    )
+    assert str(source.invite.caller_uri) == "sip:5550100@sip.tenant-a.example.test"
+
+
+def test_pending_browser_source_leg_without_inbound_from_falls_back(monkeypatch):
+    source = _forked_source(monkeypatch, {})
+    assert str(source.invite.caller_uri) == "sip:caller@127.0.0.1:15060"

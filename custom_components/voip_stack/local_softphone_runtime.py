@@ -491,10 +491,14 @@ class PendingLocalSource:
             fmt for fmt in HA_SIP_PCM_FORMATS
             if fmt.channels == 1 and fmt.nominal_frame_bytes <= 1200
         )
+        inbound_from = str(session.metadata.get("inbound_from_uri") or "")
         self.invite = SipInvite(
             source_host=local_ip, source_port=sip_port,
             request_uri=sip.SipUri(callee.sip_uri_user if callee else session.callee, local_ip, sip_port),
-            caller_uri=sip.SipUri(caller.sip_uri_user, local_ip, sip_port),
+            caller_uri=(
+                sip.parse_sip_uri(inbound_from) if inbound_from
+                else sip.SipUri(caller.sip_uri_user, local_ip, sip_port)
+            ),
             target=callee.name if callee else session.callee, caller=caller.name, call_id=session.call_id,
             cseq="1 INVITE", remote_sdp=b"",
             send_format=sdp.audio_format_to_rtp(rtp_format, 96),
