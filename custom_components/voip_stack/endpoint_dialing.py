@@ -355,9 +355,10 @@ class EndpointDialer:
                     self.config.get(CONF_VIDEO_TRANSCODING, False)
                 ),
             )
-            if not policy.use_trunk_flow:
-                from .sip_runtime import configure_local_contact
-                configure_local_contact(self.hass, client)
+            # The stable server Contact is the leg identity on every path;
+            # a registered trunk may upgrade it to its public GRUU below.
+            from .sip_runtime import configure_local_contact
+            configure_local_contact(self.hass, client)
             if policy.use_trunk_flow:
                 reuse_registered_trunk_flow(sip_trunk(self.hass, policy.trunk_id) if policy.trunk_id else sip_trunk(self.hass), client)
             elif policy.reuse_registered_flow:
