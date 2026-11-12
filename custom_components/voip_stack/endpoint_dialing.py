@@ -63,6 +63,20 @@ class OutboundLegPolicy:
     trunk_id: str = ""
 
 
+def _inbound_trunk_identity(invite) -> str:
+    """From URI a forked leg must carry verbatim.
+
+    A leg forked from an inbound trunk call renders its From header from the
+    original inbound caller address instead of the caller user plus the local
+    socket, so the callee can redial and missed-call entries resolve the
+    originating tenant. Locally originated invites carry nothing here.
+    """
+    if invite is None or not getattr(invite, "received_via_trunk", False):
+        return ""
+    caller_uri = getattr(invite, "caller_uri", None)
+    return str(caller_uri) if caller_uri is not None else ""
+
+
 @dataclass(slots=True)
 class EndpointDialer:
     """Resolve phonebook members and construct unstarted outbound legs."""
@@ -273,7 +287,9 @@ class EndpointDialer:
                         else local_name
                     )
                 ),
-                local_identity_uri=policy.local_identity_uri,
+                local_identity_uri=(
+                    policy.local_identity_uri or _inbound_trunk_identity(invite)
+                ),
                 local_sip_port=int(self.config["sip_port"]),
                 local_rtp_port=ports.ports[local_rtp_port_index],
                 supported_send_formats=sip_send_formats,
