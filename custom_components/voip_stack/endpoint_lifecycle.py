@@ -86,6 +86,11 @@ def project_session_termination(
                 else session.callee
             )
         )
+        caller_id = str(
+            details.pop("caller_id", "")
+            or metadata.get("caller_id")
+            or ""
+        )
         direction = str(
             details.pop("direction", "") or metadata.get("direction") or ""
         )
@@ -95,6 +100,7 @@ def project_session_termination(
             endpoint_id,
             intent=intent,
             peer_name=peer_name,
+            caller_id=caller_id,
             direction=direction or ("incoming" if remote else ""),
             **(common | details),
         )

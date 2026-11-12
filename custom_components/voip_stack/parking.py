@@ -18,7 +18,7 @@ from .parking_config import DEFAULT_SLOTS, parking_settings, parse_parking_addre
 from .roster import RosterEntry
 from .router import RouteAction, RouteDecision
 from .runtime_data import require_runtime_data
-from .sip_listener import SipInviteResult
+from .sip_listener import SipInviteResult, sip_caller_id
 
 _LOGGER = logging.getLogger(__name__)
 PARKING_CHANGED = "voip_stack.parking_changed"
@@ -271,8 +271,13 @@ async def park_browser_sip_call(hass, call_id, endpoint_id, *, slot=""):
     peer = runtime.endpoints.get(retained) if retained else None
     caller = peer.name if peer is not None else session.caller
     if client is not None:
-        source = ApplicationCallSource.from_client(client, call_id=session.call_id, caller=caller,
-            trunk_id=str(session.metadata.get("inbound_trunk_id") or ""))
+        source = ApplicationCallSource.from_client(
+            client,
+            call_id=session.call_id,
+            caller=caller,
+            caller_id=str(session.metadata.get("caller_id") or ""),
+            trunk_id=str(session.metadata.get("inbound_trunk_id") or ""),
+        )
     if source is None:
         raise ParkingError("The remote SIP dialog is no longer available")
     local_ip = str(client.local_ip if client is not None else server.local_ip)
@@ -378,14 +383,29 @@ async def park_established_sip_call(hass, call_id, parker, *, slot="", referrer=
     local_ip = str(source_client.local_ip if source_client is not None else server.local_ip)
     goal_id = original.call_id if from_callee else f"ha-park-{secrets.token_hex(12)}" if source_client is not None else wire_id
     caller = original.caller if from_callee else original.callee
-    source = (ApplicationCallSource.from_client(source_client, call_id=goal_id, caller=caller,
-                                               trunk_id=retained_leg.trunk_id if retained_leg is not None else "")
-              if source_client is not None else native_invite)
+    source = (
+        ApplicationCallSource.from_client(
+            source_client,
+            call_id=goal_id,
+            caller=caller,
+            caller_id=str(original.metadata.get("caller_id") or ""),
+            trunk_id=retained_leg.trunk_id if retained_leg is not None else "",
+        )
+        if source_client is not None
+        else native_invite
+    )
     lot = get_parking_lot(hass)
     settings = parking_settings(hass)
-    goal = original if from_callee else registry.upsert(goal_id, state="connecting", owner="router", caller=caller,
-        source_endpoint_id=retained_endpoint, event_only=True,
-        inbound_trunk_id=retained_leg.trunk_id if retained_leg is not None else "")
+    goal = original if from_callee else registry.upsert(
+        goal_id,
+        state="connecting",
+        owner="router",
+        caller=caller,
+        caller_id=str(original.metadata.get("caller_id") or ""),
+        source_endpoint_id=retained_endpoint,
+        event_only=True,
+        inbound_trunk_id=retained_leg.trunk_id if retained_leg is not None else "",
+    )
     parked = None
     try:
         parked = lot.reserve(goal, slot=slot, parker=parker,
@@ -472,7 +492,8 @@ async def route_parking_call(runtime, invite, decision, registry, source_endpoin
                                   source_endpoint=source_endpoint, state="ringing", route_kind="parking"):
         return busy
     session = registry.upsert(invite.call_id, state="ringing", owner="router",
-                              caller=invite.caller, callee=decision.target, route_kind="parking")
+                              caller=invite.caller, caller_id=sip_caller_id(invite),
+                              callee=decision.target, route_kind="parking")
     registry.set_pending_invite(invite.call_id, invite)
     try:
         await start_parking_application(runtime.hass, session, invite, runtime.local_ip,
@@ -559,8 +580,16 @@ async def prepare_parking_pickup(hass, invite, slot, local_ip):
         registry.set_bridge_link(session.call_id, invite.call_id)
         session.update_metadata(dest_endpoint_id=caller, target_endpoint_id=caller, connected_party=invite.caller)
         registry.transition(session.call_id, owner="bridge", state="in_call", callee=invite.caller, route_kind="parking_pickup")
-        attach_dtmf_event_bridge(hass, relay, call_id=session.call_id, dest_call_id=invite.call_id,
-                                caller=session.caller, callee=invite.caller, source_client=application.source_client)
+        attach_dtmf_event_bridge(
+            hass,
+            relay,
+            call_id=session.call_id,
+            dest_call_id=invite.call_id,
+            caller=session.caller,
+            caller_id=str(session.metadata.get("caller_id") or ""),
+            callee=invite.caller,
+            source_client=application.source_client,
+        )
         if application.source_client is not None:
             from .bridge_media_updates import BridgeMediaUpdateBinder
             BridgeMediaUpdateBinder(hass).attach_audio_side(application.source_client, relay,

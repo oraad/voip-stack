@@ -481,6 +481,9 @@ class CallRuntimeApi:
                 session.endpoint_claims if session is not None else (),
             )
         )
+        caller_id = str(metadata.get("caller_id") or "").strip()
+        if caller_id:
+            fields["caller_id"] = caller_id
         fields.update(self._event_trunk_fields(metadata, context))
         return fields
 
@@ -543,7 +546,11 @@ class CallRuntimeApi:
         owner: CallOwner = "",
         **metadata: Any,
     ) -> EndpointCallSession:
-        ownership_metadata = dict(metadata)
+        ownership_metadata = {
+            key: value
+            for key, value in metadata.items()
+            if value not in (None, "")
+        }
         if ingress:
             ownership_metadata["ingress"] = ingress
         if origin:
@@ -574,15 +581,11 @@ class CallRuntimeApi:
             if value and getattr(session, attribute) != value:
                 setattr(session, attribute, value)
                 changed = True
-        clean_metadata = {
-            key: value
-            for key, value in ownership_metadata.items()
-            if value not in (None, "")
-        }
         if any(
-            session.metadata.get(key) != value for key, value in clean_metadata.items()
+            session.metadata.get(key) != value
+            for key, value in ownership_metadata.items()
         ):
-            session.metadata.update(clean_metadata)
+            session.metadata.update(ownership_metadata)
             changed = True
         if changed:
             session.revision += 1
@@ -1162,6 +1165,7 @@ class CallRuntimeApi:
         lifecycle_task: Any | None = None,
         state: str,
         caller: str = "",
+        caller_id: str = "",
         callee: str = "",
         route_kind: str = "",
         ingress: str = "",
@@ -1198,6 +1202,7 @@ class CallRuntimeApi:
             state=state,
             owner="bridge",
             caller=caller,
+            caller_id=caller_id,
             callee=callee,
             route_kind=route_kind,
             ingress=ingress,

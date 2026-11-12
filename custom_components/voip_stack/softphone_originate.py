@@ -418,6 +418,7 @@ async def async_originate_browser_call(
                 state=CallState.IN_CALL.value,
                 owner="ha_softphone",
                 caller=local_name,
+                caller_id=local_name,
                 callee=room_name,
                 route_kind="conference",
                 endpoint_id=endpoint_id,
@@ -720,6 +721,7 @@ async def async_originate_browser_call(
         state=CallState.CALLING.value,
         owner="ha_softphone",
         caller=local_name,
+        caller_id=local_name,
         callee=display_target,
         route_kind="direct",
         direction="outgoing",
@@ -749,6 +751,7 @@ async def async_originate_browser_call(
         client,
         call_id=client.dialog_ids.call_id,
         caller=local_name,
+        caller_id="",
         callee=display_target,
     )
     attach_outbound_connected_identity_state(

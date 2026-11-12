@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from .call_scope import set_pending_route, take_pending_route
 from .const import CONF_TRUNK_INBOUND_DEFAULT_TARGET
 from .fsm import CallState
+from .sip_listener import sip_caller_id
 
 if TYPE_CHECKING:
     from .endpoint_session import EndpointCallSession
@@ -65,6 +66,7 @@ async def async_request_inbound_destination(
         hass,
         session,
         peer_name=invite.caller,
+        caller_id=sip_caller_id(invite),
         direction="incoming",
         ingress="trunk",
         origin="trunk",

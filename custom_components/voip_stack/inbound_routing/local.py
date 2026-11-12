@@ -18,7 +18,7 @@ from ..groups import GROUP_TYPE_CONFERENCE, GROUP_TYPE_RING
 from ..media_ports import RtpPortReservation, take_delayed_offer_ports
 from ..router import RouteAction
 from ..core.sdp import build_answer_directional
-from ..sip_listener import SipInviteResult
+from ..sip_listener import SipInviteResult, sip_caller_id
 
 if TYPE_CHECKING:
     from ..pbx_runtime import SipEndpointRuntime
@@ -66,6 +66,7 @@ async def _claim_source(
         state=state,
         owner="router",
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=invite.target,
         route_kind=route_kind,
         source_endpoint_id=source_endpoint.endpoint_id,
@@ -222,6 +223,7 @@ async def route_local_group(
                 state=CallState.IN_CALL.value,
                 owner="bridge",
                 caller=invite.caller,
+                caller_id=sip_caller_id(invite),
                 callee=invite.target,
                 route_kind=GROUP_TYPE_CONFERENCE,
                 source_endpoint_id=source_endpoint_id,
@@ -262,6 +264,7 @@ async def route_local_group(
             state=CallState.RINGING.value,
             owner="router",
             caller=invite.caller,
+            caller_id=sip_caller_id(invite),
             callee=invite.target,
             route_kind=GROUP_TYPE_RING,
             source_endpoint_id=source_endpoint_id,

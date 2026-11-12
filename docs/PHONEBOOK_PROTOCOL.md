@@ -71,8 +71,10 @@ of the same name. SIP keeps routing and presentation separate on the wire:
 
 - the URI user is encoded as a valid, stable SIP route;
 - the quoted display name preserves spaces and is shown to the peer;
-- an incoming caller display is read from the peer's `From` header, not
-  replaced from the roster.
+- an incoming caller display is read from the peer's `From` header, and a
+  provider-supplied display name is not replaced from the roster;
+- only a number-only trunk display may be resolved to a phonebook contact name,
+  while the raw number remains available as `caller_id`.
 
 For the ESP itself, ESPHome's node name is the stable URI user and
 `friendly_name` is the SIP display name. For example, node

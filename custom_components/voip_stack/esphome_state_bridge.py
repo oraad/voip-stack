@@ -160,9 +160,16 @@ async def async_emit_state_event(
         source = endpoint_id == managed_session.metadata.get("source_endpoint_id")
         if canonical in {"ringing", "remote_ringing"}:
             canonical = "remote_ringing" if source else "ringing"
-        payload.update(state=canonical, reported_state=state, event_type="state_changed",
-                       direction="outgoing" if source else "incoming", reason="",
-                       caller=managed_session.caller, callee=managed_session.callee)
+        payload.update(
+            state=canonical,
+            reported_state=state,
+            event_type="state_changed",
+            direction="outgoing" if source else "incoming",
+            reason="",
+            caller=managed_session.caller,
+            callee=managed_session.callee,
+            caller_id=str(managed_session.metadata.get("caller_id") or ""),
+        )
     _fire_call_event(hass, payload, "esp")
 
 

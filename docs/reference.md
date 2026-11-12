@@ -135,10 +135,12 @@ the wire SIP keeps two separate standard fields: a stable URI user for routing
 and a human display name in the quoted name-address. An ESP publishes its
 ESPHome node name as the URI user and its `friendly_name` as the display name,
 so `Waveshare P4 Touch` is transmitted with spaces while the stable route stays
-`waveshare-p4-touch`. Incoming caller names are read from SIP `From`, not
-rewritten from the HA roster. After answer, HA also publishes the selected
-callee through an RFC 4916 connected-identity UPDATE when the peer supports the
-normal in-dialog method.
+`waveshare-p4-touch`. Incoming caller names are read from SIP `From`; a valid
+provider-supplied display name is never rewritten from the HA roster. Only a
+number-only trunk display is eligible for a phonebook name lookup, and the raw
+number remains available as `caller_id`. After answer, HA also publishes the
+selected callee through an RFC 4916 connected-identity UPDATE when the peer
+supports the normal in-dialog method.
 
 ### ESP conditions
 
@@ -378,8 +380,8 @@ Public occurrence types are:
 
 The payload includes the canonical SIP fields when available: `state`,
 `sip_state`, `type`, `call_id`, `sequence`, `previous_state`, `route_history`,
-`automation_control`, `caller`, `callee`, `peer_name`, `direction`,
-`local_name`, `target`, `sip_uri`, `route_kind`, `sip_transport`,
+`automation_control`, `caller`, `caller_id`, `callee`, `peer_name`,
+`direction`, `local_name`, `target`, `sip_uri`, `route_kind`, `sip_transport`,
 `sip_status_code`, `terminal_reason`, `endpoint_id`, source/destination endpoint
 and Device IDs, stable `ingress` / `origin` (`trunk` or `extension`),
 `inbound_trunk_id` / `inbound_trunk_name` when the call arrived from a configured
@@ -391,6 +393,10 @@ trunk Device ID or its unique display name.
 Both directions can appear on one call when a trunk call is forwarded or bridged
 through another line. Native triggers accept `inbound_trunk_id` and
 `outbound_trunk_id` filters.
+`caller` is the presentation identity shown to
+people; `caller_id` preserves the raw SIP routing identity, which is useful for
+trunk-number filters even when a phonebook name replaced the display text.
+A resolved phonebook name is presentation only and is not caller authentication.
 
 Existing Event Entity automations use HA's `event.received` trigger. Raw event-bus messages
 are internal plumbing between the integration, frontend and Event Entities and

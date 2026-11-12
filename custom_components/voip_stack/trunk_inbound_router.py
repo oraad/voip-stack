@@ -42,6 +42,7 @@ from .fsm import (
     sip_terminal_reason,
 )
 from .inbound_answer import async_commit_runtime_answer
+from .sip_listener import sip_caller_id
 from .media_ports import (
     RtpPortReservation,
     release_video_media_reservation,
@@ -642,6 +643,7 @@ async def async_route_trunk_invite(
             BridgeCommitPolicy(
                 route_kind="trunk",
                 caller=invite.caller,
+                caller_id=sip_caller_id(invite),
                 callee=destination,
                 connected_party=destination,
                 source_role="trunk",

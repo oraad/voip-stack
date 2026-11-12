@@ -77,7 +77,8 @@ async def originate_with_trunk(call, phone, destination):
     if endpoint.active_call_id:
         raise ServiceValidationError("The selected ESPHome phone is busy")
     call_id = CALL_ID_PREFIX + secrets.token_hex(16) + "@ha"
-    session = registry.upsert(call_id, owner="router", state="connecting", caller=phone.name, callee=destination,
+    session = registry.upsert(call_id, owner="router", state="connecting", caller=phone.name,
+        caller_id=str(getattr(endpoint, "sip_uri_user", "") or phone.name), callee=destination,
         source_endpoint_id=phone.endpoint_id, endpoint_id=phone.endpoint_id,
         outbound_trunk_id=selection.identity)
     request = EspCallRequest(session, phone.endpoint_id, destination, selection.identity)

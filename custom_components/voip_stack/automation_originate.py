@@ -179,7 +179,9 @@ async def async_originate_automation_call(call: ServiceCall) -> dict:
     try:
         session = registry.upsert(
             call_id, state=CallState.CALLING.value, owner='automation',
-            caller=source.display_name, callee=destination, route_kind='automation',
+            caller=source.display_name,
+            caller_id=str(source.extension or source.id or source.display_name or ""),
+            callee=destination, route_kind='automation',
             origin='automation', source_automation=source.id,
             dest_endpoint_id=attempt.endpoint_id,
             policy_endpoint_ids=resolved.forwarded_endpoint_ids,

@@ -765,9 +765,11 @@ the recording. Do not add `hangup` after this transfer: that execution no longer
 owns the mailbox call.
 
 `voip_stack_voicemail_received` reports a saved message's stable `mailbox_id`,
-opaque `message_id`, caller, duration and whether it is partial. It contains no
-public download URL. A recording or storage failure ends the mailbox deposit
-and uses the existing call cleanup; it does not leave a hidden media session.
+opaque `message_id`, caller, `caller_id` (the raw SIP identity when the display
+name was resolved through the phonebook), duration and whether it is partial.
+It contains no public download URL. A recording or storage failure ends the
+mailbox deposit and uses the existing call cleanup; it does not leave a hidden
+media session.
 
 ### `voip_stack.transcribe_voicemail` and `voip_stack.get_voicemail`
 

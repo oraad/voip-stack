@@ -26,6 +26,8 @@ def _invite() -> SipInvite:
         caller_uri=parse_sip_uri("sip:alice@192.0.2.10"),
         target="Casa",
         caller="Alice",
+        caller_route="alice",
+        caller_id="alice",
         call_id="call-1",
         cseq="1 INVITE",
         remote_sdp=b"",
@@ -104,6 +106,183 @@ def _patch_route_prefix(
         "_pending_routes",
         lambda _hass: pending_routes or {},
     )
+
+
+def test_trunk_caller_lookup_requires_a_number_and_matches_number_only() -> None:
+    from dataclasses import replace
+
+    from custom_components.voip_stack.roster import RosterEntry
+
+    entries = [
+        RosterEntry(id="alex", name="Alex Mobile", number="+1 (202) 555-0100"),
+        RosterEntry(id="local", name="Local extension", extension="2025550100"),
+    ]
+    number_invite = replace(
+        _invite(), caller="+1 202 555 0100", caller_route="+12025550100"
+    )
+    assert invite_router._trunk_caller_name(number_invite, entries) == "Alex Mobile"
+
+    empty_display = replace(_invite(), caller="", caller_route="+12025550100")
+    assert invite_router._trunk_caller_name(empty_display, entries) == "Alex Mobile"
+
+    named_invite = replace(_invite(), caller="Dio Cane", caller_route="+12025550100")
+    assert invite_router._trunk_caller_name(named_invite, entries) == ""
+
+    mismatched_invite = replace(
+        _invite(), caller="+12025550101", caller_route="+12025550100"
+    )
+    assert invite_router._trunk_caller_name(mismatched_invite, entries) == ""
+
+    extension_only = [
+        RosterEntry(id="local", name="Local extension", extension="2025550100")
+    ]
+    assert invite_router._trunk_caller_name(number_invite, extension_only) == ""
+
+    ambiguous = [
+        RosterEntry(id="alex", name="Alex Mobile", number="+12025550100"),
+        RosterEntry(id="alex-2", name="Alex Office", number="+12025550100"),
+    ]
+    assert invite_router._trunk_caller_name(number_invite, ambiguous) == ""
+
+    disabled = [
+        RosterEntry(id="alex", name="Alex Mobile", number="+12025550100", enabled=False)
+    ]
+    assert invite_router._trunk_caller_name(number_invite, disabled) == ""
+
+    # A contact whose "name" is the number itself must never trigger a fake
+    # replacement; the displayed value would not change.
+    number_named = [
+        RosterEntry(id="alex", name="+12025550100", number="+12025550100")
+    ]
+    assert invite_router._trunk_caller_name(number_invite, number_named) == ""
+
+    # Short numeric displays (extensions, 2-digit service codes) are not phone
+    # numbers, even when a contact happens to share the digits.
+    short_invite = replace(_invite(), caller="22", caller_route="22")
+    assert invite_router._trunk_caller_name(short_invite, entries) == ""
+
+
+@pytest.mark.asyncio
+async def test_trunk_route_applies_phonebook_name_and_keeps_raw_caller_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from dataclasses import replace
+
+    from custom_components.voip_stack.roster import RosterEntry
+    from custom_components.voip_stack.sip_listener import SipInviteResult
+
+    _patch_route_prefix(monkeypatch)
+    entries = [RosterEntry(id="alex", name="Alex Mobile", number="+12025550100")]
+    monkeypatch.setattr(
+        invite_router,
+        "_roster_from_peers",
+        Mock(return_value=entries),
+    )
+    runtime = _runtime()
+    runtime.is_trunk_invite = Mock(return_value=True)
+    runtime.is_ha_target = Mock(return_value=False)
+    runtime.get_trunk_config = Mock(
+        return_value={
+            "trunk_inbound_mode": "direct",
+            "trunk_inbound_default_target": "Assistant",
+            "automation_routing_enabled": True,
+        }
+    )
+    runtime.inbound_route_decision = Mock(
+        return_value=RouteDecision(RouteAction.ASSIST, target="Assistant")
+    )
+    seen = []
+
+    async def capture(invite, **kwargs):
+        seen.append(invite)
+        return SipInviteResult(200, "OK", to_tag="")
+
+    monkeypatch.setattr(invite_router, "route_local_assist", capture)
+    monkeypatch.setattr(
+        invite_router,
+        "request_route_override",
+        AsyncMock(return_value=SimpleNamespace(action="", destination="")),
+    )
+    monkeypatch.setattr(invite_router, "automation_rejection", lambda **_: None)
+    monkeypatch.setattr(
+        invite_router,
+        "registration_data",
+        lambda _: SimpleNamespace(route_trigger_filters={}),
+    )
+
+    result = await invite_router.route_invite(
+        runtime,
+        replace(_invite(), caller="+12025550100", caller_route="+12025550100"),
+    )
+
+    assert result.status == 200
+    assert seen[0].caller == "Alex Mobile"
+    assert seen[0].caller_id == "+12025550100"
+    assert seen[0].routing_caller == "+12025550100"
+
+
+@pytest.mark.asyncio
+async def test_trunk_route_keeps_provider_name_and_raw_caller_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from dataclasses import replace
+
+    from custom_components.voip_stack.roster import RosterEntry
+    from custom_components.voip_stack.sip_listener import SipInviteResult
+
+    _patch_route_prefix(monkeypatch)
+    entries = [RosterEntry(id="alex", name="Alex Mobile", number="+12025550100")]
+    monkeypatch.setattr(
+        invite_router,
+        "_roster_from_peers",
+        Mock(return_value=entries),
+    )
+    runtime = _runtime()
+    runtime.is_trunk_invite = Mock(return_value=True)
+    runtime.is_ha_target = Mock(return_value=False)
+    runtime.get_trunk_config = Mock(
+        return_value={
+            "trunk_inbound_mode": "direct",
+            "trunk_inbound_default_target": "Assistant",
+            "automation_routing_enabled": True,
+        }
+    )
+    runtime.inbound_route_decision = Mock(
+        return_value=RouteDecision(RouteAction.ASSIST, target="Assistant")
+    )
+    seen = []
+
+    async def capture(invite, **kwargs):
+        seen.append(invite)
+        return SipInviteResult(200, "OK", to_tag="")
+
+    monkeypatch.setattr(invite_router, "route_local_assist", capture)
+    monkeypatch.setattr(
+        invite_router,
+        "request_route_override",
+        AsyncMock(return_value=SimpleNamespace(action="", destination="")),
+    )
+    monkeypatch.setattr(invite_router, "automation_rejection", lambda **_: None)
+    monkeypatch.setattr(
+        invite_router,
+        "registration_data",
+        lambda _: SimpleNamespace(route_trigger_filters={}),
+    )
+
+    result = await invite_router.route_invite(
+        runtime,
+        replace(
+            _invite(),
+            caller="Dio Cane",
+            caller_route="+12025550100",
+            caller_id="+12025550100",
+        ),
+    )
+
+    assert result.status == 200
+    assert seen[0].caller == "Dio Cane"
+    assert seen[0].caller_id == "+12025550100"
+    assert seen[0].routing_caller == "+12025550100"
 
 
 @pytest.mark.asyncio
