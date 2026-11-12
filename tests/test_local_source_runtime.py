@@ -204,3 +204,8 @@ def test_pending_browser_source_leg_inbound_from_verbatim(monkeypatch):
 def test_pending_browser_source_leg_without_inbound_from_falls_back(monkeypatch):
     source = _forked_source(monkeypatch, {})
     assert str(source.invite.caller_uri) == "sip:caller@127.0.0.1:15060"
+
+
+def test_pending_browser_source_leg_corrupt_inbound_from_falls_back(monkeypatch):
+    source = _forked_source(monkeypatch, {"inbound_from_uri": "not-a-sip-uri"})
+    assert str(source.invite.caller_uri) == "sip:caller@127.0.0.1:15060"
