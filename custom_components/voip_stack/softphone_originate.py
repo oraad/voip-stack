@@ -702,7 +702,11 @@ async def async_originate_browser_call(
     attach_browser_dialog_updates(hass, client, endpoint_id, source_device_id)
     if use_trunk and trunk is not None:
         from .trunk_signaling import reuse_registered_trunk_flow
+        from .sip_runtime import configure_local_contact
 
+        # Stable server Contact first; reuse upgrades it to a public GRUU
+        # when the trunk actually has one.
+        configure_local_contact(hass, client)
         if reuse_registered_trunk_flow(trunk, client):
             _LOGGER.info("SIP trunk registered UDP flow reused for outbound call")
     else:
