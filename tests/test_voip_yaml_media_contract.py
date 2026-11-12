@@ -1,17 +1,17 @@
 """Contracts shared by maintained ESPHome VoIP media profiles."""
 
 from pathlib import Path
-import os
 import re
 
 import pytest
 import esphome.config_validation as cv
 
 from tests.native_profile import profile, by_id, nodes, action_id, text as values_text
+from tests.support.sibling_repos import sibling_repo
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VOIP_COMPONENTS = Path(os.environ.get("VOIP_STACK_REPO", ROOT.parent / "esphome-voip-stack")) / "esphome" / "components"
+VOIP_COMPONENTS = sibling_repo("VOIP_STACK_REPO", "esphome-voip-stack") / "esphome" / "components"
 P4_RENDERER_COMPONENT = VOIP_COMPONENTS / "p4_video_renderer"
 H264_SOURCE_COMPONENT = VOIP_COMPONENTS / "esp_h264_video_source"
 JPEG_SOURCE_COMPONENT = VOIP_COMPONENTS / "esp_jpeg_video_source"

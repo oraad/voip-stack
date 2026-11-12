@@ -30,6 +30,7 @@ from .core.audio_format import (
 )
 from .assist_endpoint import AssistEndpoint
 from .call_forwarder import ForwardRuntime, async_forward_existing_call
+from .call_registry import inbound_from_metadata
 from .config_entry_runtime import (
     async_refresh_and_push_phonebook as _refresh_and_push_phonebook,
 )
@@ -394,6 +395,7 @@ async def async_start_sip_endpoint(hass: HomeAssistant) -> bool:
             dialed_target=invite.target,
             ingress="trunk" if invite.received_via_trunk else "extension",
             origin="trunk" if invite.received_via_trunk else "extension",
+            **inbound_from_metadata(invite),
         )
         registry.set_pending_invite(invite.call_id, invite)
         registry.claim_endpoint(
@@ -781,6 +783,7 @@ async def async_start_sip_endpoint(hass: HomeAssistant) -> bool:
             callee=initial.target,
             ingress="trunk" if initial.received_via_trunk else "extension",
             origin="trunk" if initial.received_via_trunk else "extension",
+            **inbound_from_metadata(initial),
         )
         try:
             ports = reserve_delayed_offer_ports(hass, registry, initial.call_id)

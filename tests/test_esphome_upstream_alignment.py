@@ -4,7 +4,6 @@ import base64
 import hashlib
 from importlib import metadata
 import json
-import os
 import re
 import subprocess
 import sys
@@ -13,6 +12,7 @@ from esphome import yaml_util
 import pytest
 
 from tests.esphome_native import NATIVE_COMPONENTS
+from tests.support.sibling_repos import sibling_repo
 from tests.test_package_composition import FULL, device_config
 
 
@@ -36,7 +36,7 @@ def test_retired_provider_is_not_shipped(component):
 
 
 def test_audio_stack_does_not_ship_a_shadow_resampler():
-    source = Path(os.environ.get("AUDIO_STACK_REPO", ROOT.parent / "esphome-audio-stack"))
+    source = sibling_repo("AUDIO_STACK_REPO", "esphome-audio-stack")
     assert not (source / "esphome/components/resampler").exists()
 
 

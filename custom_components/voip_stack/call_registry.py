@@ -57,6 +57,21 @@ _EVENT_IDENTITY_KEYS = (
     "ingress", "origin",
 )
 _EVENT_TRUNK_KEYS = ("inbound_trunk_id", "outbound_trunk_id")
+INBOUND_FROM_KEY = "inbound_from_uri"
+
+
+def inbound_from_metadata(invite: Any) -> dict[str, str]:
+    """Session metadata carrying the inbound From URI for forked-leg identity.
+
+    A leg forked from an inbound trunk call renders its From header from this
+    stored URI instead of a rebuilt local one, so the callee can redial and
+    missed-call entries resolve the originating tenant. Locally originated
+    invites carry nothing.
+    """
+    if not getattr(invite, "received_via_trunk", False) or invite.caller_uri is None:
+        return {}
+    rendered = str(invite.caller_uri)
+    return {INBOUND_FROM_KEY: rendered} if rendered else {}
 
 
 def committed_operation(method):
