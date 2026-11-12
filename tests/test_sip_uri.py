@@ -73,6 +73,19 @@ class SipUriTest(unittest.TestCase):
         ))
         self.assertEqual(response.header("Contact"), "")
 
+    def test_reliable_provisional_flags_are_header_name_case_insensitive(self) -> None:
+        request = sip.parse_message(sip.build_request("INVITE", "sip:5550200@192.0.2.10", [
+            ("Via", "SIP/2.0/TCP 192.0.2.20:5060;branch=z9hG4bK-lower"),
+            ("From", "<sip:5550100@192.0.2.20>;tag=f1"),
+            ("To", "<sip:5550200@192.0.2.10>"),
+            ("Call-ID", "reliable-lowercase"), ("CSeq", "2 INVITE"),
+        ]))
+        response = sip.parse_message(sip.build_uas_response(
+            request, 180, "Ringing", contact_uri="sip:5550100@192.0.2.10:5060;transport=tcp",
+            to_tag="t1", extra_headers=(("require", "100rel"), ("RSeq", "1")),
+        ))
+        self.assertEqual(response.header("Contact"), "<sip:5550100@192.0.2.10:5060;transport=tcp>")
+
     def test_fritzbox_service_code_round_trips_from_percent_encoded_uri(self) -> None:
         parsed = sip.parse_sip_uri("sip:%2A%2A621@192.0.2.1")
 

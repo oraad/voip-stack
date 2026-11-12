@@ -1035,7 +1035,7 @@ def build_uas_response(
 
     extra_headers = tuple(extra_headers)
     require_100rel = any(
-        name == "Require" and "100rel" in value for name, value in extra_headers
+        name.lower() == "require" and "100rel" in value for name, value in extra_headers
     )
     vias = request.header_values("Via")
     headers = [("Via", top_via or vias[0])] if vias else []
