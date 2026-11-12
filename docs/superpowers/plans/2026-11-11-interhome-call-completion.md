@@ -38,13 +38,13 @@ Each line is an input class the spec implies that no task's main test names; the
 Carries the already-written workspace-relocation fixes (design doc "Workspace layout" list) onto a fresh branch off `main` as one chore commit, together with the spec and this plan. Current branch `feature/trunk-event-identity` must stay untouched.
 
 **Files:**
-- Create branch `fix/interhome-call-completion` from `main` (repo root `/root/voip-stack`).
+- Create branch `fix/inter-pbx-call-completion` from `main` (repo root `/root/voip-stack`).
 - Carried modified files (identical between `main` and current HEAD, so they travel across checkout): `scripts/yaml_paths.sh`, `tests/support/sibling_repos.py` (new), `tests/runtime_observer_fixture.py`, `tests/test_package_composition.py`, `tests/test_esphome_upstream_alignment.py`, `tests/test_full_processing_restore.py`, `tests/test_voip_yaml_media_contract.py`, `tests/test_lvgl_settings_composition.py`, `docs/superpowers/`.
 - Re-applied after checkout: `scripts/test_suite.sh` (differs between `main` and current HEAD; carry would smuggle a foreign line).
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: branch `fix/interhome-call-completion`; helper `tests.support.sibling_repos.sibling_repo(variable: str, name: str) -> pathlib.Path` used by later test steps.
+- Produces: branch `fix/inter-pbx-call-completion`; helper `tests.support.sibling_repos.sibling_repo(variable: str, name: str) -> pathlib.Path` used by later test steps.
 
 - [ ] **Step 1: Re-apply the test_suite.sh probe on main's version instead of carrying it.**
 
