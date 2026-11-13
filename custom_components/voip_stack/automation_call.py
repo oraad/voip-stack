@@ -16,6 +16,7 @@ from .endpoint_lifecycle import call_registry
 from .endpoint_session import TerminationIntent
 from .fsm import CallState
 from .runtime_data import call_runtime_artifacts
+from .sip_listener import sip_caller_id
 
 from .local_application import LocalCallApplication, attach_local_application
 
@@ -449,6 +450,7 @@ async def route_automation_call(runtime, invite, decision, registry, source_endp
         state=CallState.IN_CALL.value if answered else CallState.RINGING.value,
         owner="automation",
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=decision.entry.display_name,
         route_kind="automation",
     )

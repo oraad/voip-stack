@@ -749,6 +749,7 @@ async def async_originate_browser_call(
         client,
         call_id=client.dialog_ids.call_id,
         caller=local_name,
+        caller_id="",
         callee=display_target,
     )
     attach_outbound_connected_identity_state(

@@ -5,7 +5,7 @@ from dataclasses import dataclass, replace
 
 from .core.sip_transfer import SipReplaces
 from .endpoint_session import EndpointCallSession, SipTerminationDisposition, TerminationIntent, SessionHandoff
-from .sip_listener import SipInviteResult
+from .sip_listener import SipInviteResult, sip_caller_id
 from .session_cleanup import async_wait_for_cleanup
 
 
@@ -204,6 +204,7 @@ async def _prepare_replacement_locked(hass, invite, local_ip, previous):
     try:
         new = calls.upsert(
             invite.call_id, state="connecting", owner="bridge", caller=invite.caller,
+            caller_id=sip_caller_id(invite),
             callee=old.callee, route_kind=old.route_kind,
             source_endpoint_id=grant.endpoint_id, dest_endpoint_id=target_endpoint,
             inbound_trunk_id=invite.trunk_id,
@@ -301,7 +302,8 @@ async def _prepare_replacement_locked(hass, invite, local_ip, previous):
                 calls.register_bridge(
                     source_call_id=new.call_id, dest_call_id=destination_id,
                     client=client, lifecycle_task=watcher, state="in_call",
-                    caller=invite.caller, callee=old.callee, route_kind=old.route_kind,
+                    caller=invite.caller, caller_id=sip_caller_id(invite),
+                    callee=old.callee, route_kind=old.route_kind,
                     expected_generation=new.generation,
                 )
                 calls.attach_relay(new.call_id, relay)
@@ -312,9 +314,16 @@ async def _prepare_replacement_locked(hass, invite, local_ip, previous):
                     source_video_send_format=invite.send_video_format,
                     source_video_receive_format=invite.recv_video_format,
                 )
-                attach_dtmf_event_bridge(hass, relay, call_id=new.call_id,
-                                         dest_call_id=destination_id, caller=invite.caller,
-                                         callee=old.callee, client=client)
+                attach_dtmf_event_bridge(
+                    hass,
+                    relay,
+                    call_id=new.call_id,
+                    dest_call_id=destination_id,
+                    caller=invite.caller,
+                    caller_id=sip_caller_id(invite),
+                    callee=old.callee,
+                    client=client,
+                )
                 if not new.claim_answer(new.token, lambda: True):
                     raise RuntimeError("replacement answer ownership changed")
         except BaseException:

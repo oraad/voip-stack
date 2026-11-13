@@ -133,6 +133,7 @@ def endpoint_call_state_attributes(
         "direction",
         "ingress",
         "peer_name",
+        "caller_id",
         "terminal_reason",
         *extra_keys,
     )

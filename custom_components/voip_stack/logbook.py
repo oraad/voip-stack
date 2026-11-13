@@ -20,7 +20,13 @@ from .entity_identity import shared_entity_ids
 
 
 def _party(data: Mapping[str, Any], *keys: str) -> str:
-    """Return the first useful human-facing party label."""
+    """Return the first useful human-facing party label.
+
+    ``caller_id`` is intentionally checked last: it holds the raw SIP number,
+    while ``caller``/``peer_name`` carry the resolved phonebook name when one
+    exists.  Showing the name first keeps the Logbook human-readable; falling
+    back to the raw number preserves an identifier when no name is available.
+    """
 
     for key in keys:
         value = str(data.get(key) or "").strip()
@@ -73,7 +79,7 @@ def _route_destination(data: Mapping[str, Any]) -> str:
 def _describe_call(data: Mapping[str, Any], entity_id: str | None = None) -> dict[str, str]:
     """Build one durable summary from the terminal event payload."""
 
-    caller = _party(data, "caller", "peer_name") or "Unknown caller"
+    caller = _party(data, "caller", "peer_name", "caller_id") or "Unknown caller"
     direction = str(data.get("direction") or "").strip().lower()
     destination_keys = (
         ("answered_by", "connected_party", "local_name", "callee", "dialed_target")

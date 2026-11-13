@@ -21,6 +21,7 @@ class PendingSipDestination:
     original_name: str
     retired: bool = False
     cleanup_task: object = None
+    caller_id: str = ""
 
     @classmethod
     def capture(cls, hass, registry, session):
@@ -55,6 +56,7 @@ class PendingSipDestination:
                 or ""
             ),
             session.callee,
+            caller_id=str(session.metadata.get("caller_id") or ""),
         )
 
     def validate(self):
@@ -95,6 +97,7 @@ class PendingSipDestination:
             dest_endpoint_id="",
             target_endpoint_id="",
             endpoint_id=str(session.metadata.get("source_endpoint_id") or ""),
+            caller_id=self.caller_id,
         )
         if leg is not None:
             leg.endpoint_id = self.endpoint_id

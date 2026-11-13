@@ -14,7 +14,7 @@ from ..call_projection import publish_bridge_projection
 from ..call_scope import set_pending_route, take_pending_route
 from ..endpoint_lifecycle import call_registry
 from ..fsm import CallState, TerminalReason
-from ..sip_listener import SipInviteResult
+from ..sip_listener import SipInviteResult, sip_caller_id
 
 if TYPE_CHECKING:
     from ..router import RouteDecision
@@ -92,6 +92,7 @@ async def request_route_override(
         invite.call_id,
         state=CallState.CONNECTING.value,
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=decision.target or invite.target,
         route_kind=decision.action.value,
     )
@@ -109,7 +110,9 @@ async def request_route_override(
     publish_bridge_projection(
         hass,
         session,
-        peer_name=invite.caller, local_name=runtime.ha_peer_name(hass),
+        peer_name=invite.caller,
+        caller_id=sip_caller_id(invite),
+        local_name=runtime.ha_peer_name(hass),
         selected_tx_format=invite.send_format.audio_format.wire_token(),
         selected_rx_format=invite.recv_format.audio_format.wire_token(),
         selected_tx_rtp_format=invite.send_format.wire_token(),

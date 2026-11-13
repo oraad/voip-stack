@@ -239,6 +239,10 @@ def test_origin_projection_is_gated_and_preserves_terminal_metadata(
     )
     ring_group.observe_phone_leg_projection.assert_not_called()
 
+    ring_group.call_registry.return_value.get_session.return_value.metadata = {
+        "caller_id": ""
+    }
+
     ring_group.publish_ring_group_origin_state(
         SimpleNamespace(),
         enabled=True,

@@ -24,7 +24,7 @@ from ..phone_endpoint import (
 )
 from ..router import RouteReason
 from ..core.sdp import build_answer_directional, constrained_video_direction
-from ..sip_listener import SipInviteResult
+from ..sip_listener import SipInviteResult, sip_caller_id
 
 if TYPE_CHECKING:
     from ..pbx_runtime import SipEndpointRuntime
@@ -92,6 +92,7 @@ def defer_browser_softphone_invite(
                 state=CallState.RINGING.value,
                 owner="router",
                 caller=invite.caller,
+                caller_id=sip_caller_id(invite),
                 callee=resolved_callee,
                 route_kind=decision.action.value,
                 source_endpoint_id=source_endpoint.endpoint_id,
@@ -175,6 +176,7 @@ def answer_inbound_ha_softphone(
         state=CallState.CONNECTING.value,
         owner="ha_softphone",
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=resolved_callee,
         route_kind=decision.action.value,
         endpoint_id=target.endpoint_id,
@@ -288,6 +290,7 @@ def answer_inbound_ha_softphone(
         state=CallState.IN_CALL.value,
         owner="ha_softphone",
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=resolved_callee,
         route_kind=decision.action.value,
         endpoint_id=target.endpoint_id,
@@ -302,7 +305,8 @@ def answer_inbound_ha_softphone(
     publish_phone_projection(
         hass,
         session,
-        target.endpoint_id, peer_name=invite.caller, direction="incoming",
+        target.endpoint_id, peer_name=invite.caller,
+        caller_id=sip_caller_id(invite), direction="incoming",
         selected_tx_format=invite.send_format.audio_format.wire_token(),
         selected_rx_format=invite.recv_format.audio_format.wire_token(),
         selected_tx_rtp_format=invite.send_format.wire_token(),

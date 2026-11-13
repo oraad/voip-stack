@@ -447,6 +447,7 @@ async def test_sip_pickup_after_forward_to_browser_retains_original_caller(
         runtime.calls.get_session(session.call_id) is session
         and session.state == "in_call"
     )
+    assert session.metadata.get("caller_id") == "transfer_a"
     if pickup_path != "browser_service":
         relay = runtime.calls.resource_for(session.call_id, "relay")
         await wait_for(lambda: relay.left_tx_packets > 20 and relay.right_tx_packets > 20)
