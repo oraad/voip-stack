@@ -38,6 +38,14 @@ def _load_dtmf_events(monkeypatch):
     runtime_data.sip_endpoint_manager = lambda _hass: None
     websocket = types.ModuleType("custom_components.voip_stack.websocket_api")
     websocket.SIP_DTMF_EVENT = "voip_stack.dtmf"
+    trunk_events = types.ModuleType("custom_components.voip_stack.trunk_events")
+    trunk_events.add_trunk_names = lambda _hass, payload: payload.update(
+        {
+            key.replace("_trunk_id", "_trunk_name"): "Home"
+            for key in ("inbound_trunk_id", "outbound_trunk_id")
+            if payload.get(key)
+        }
+    )
     for name, module in {
         "homeassistant": homeassistant,
         "homeassistant.core": homeassistant_core,
@@ -49,6 +57,7 @@ def _load_dtmf_events(monkeypatch):
         "custom_components.voip_stack.endpoint_lifecycle": lifecycle,
         "custom_components.voip_stack.fsm": fsm,
         "custom_components.voip_stack.runtime_data": runtime_data,
+        "custom_components.voip_stack.trunk_events": trunk_events,
         "custom_components.voip_stack.websocket_api": websocket,
     }.items():
         monkeypatch.setitem(sys.modules, name, module)
@@ -86,6 +95,7 @@ def test_bridge_publishes_canonical_dtmf_and_translates_info(monkeypatch) -> Non
             "revision": 4,
             "canonical_call_id": call_id,
             "canonical_state": state,
+            "inbound_trunk_id": "home",
         },
         ha_context=lambda _call_id: "ha-context",
     )
@@ -122,6 +132,7 @@ def test_bridge_publishes_canonical_dtmf_and_translates_info(monkeypatch) -> Non
     assert left["transport"] == "rfc4733"
     assert left["ingress"] == "trunk"
     assert left["origin"] == "trunk"
+    assert left["inbound_trunk_name"] == "Home"
     assert left["route_kind"] == "ring_group"
     assert left["automation_control"] == "ha_anchored"
     assert bus.events[0][2] == "ha-context"

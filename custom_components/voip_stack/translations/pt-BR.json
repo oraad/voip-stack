@@ -732,6 +732,14 @@
         "ingress": {
           "name": "Origem da chamada",
           "description": "Filtro opcional."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk receptor",
+          "description": "Trunk que recebeu a chamada. Deixe vazio para todas."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk de origem",
+          "description": "Trunk usado para originar a chamada. Deixe vazio para todas."
         }
       }
     },
@@ -750,6 +758,14 @@
         "ingress": {
           "name": "Origem da chamada",
           "description": "Filtro opcional."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk receptor",
+          "description": "Trunk que recebeu a chamada. Deixe vazio para todas."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk de origem",
+          "description": "Trunk usado para originar a chamada. Deixe vazio para todas."
         }
       }
     },
@@ -768,6 +784,14 @@
         "ingress": {
           "name": "Origem da chamada",
           "description": "Filtro opcional."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk receptor",
+          "description": "Trunk que recebeu a chamada. Deixe vazio para todas."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk de origem",
+          "description": "Trunk usado para originar a chamada. Deixe vazio para todas."
         }
       }
     },
@@ -786,6 +810,14 @@
         "ingress": {
           "name": "Origem da chamada",
           "description": "Filtro opcional."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk receptor",
+          "description": "Trunk que recebeu a chamada. Deixe vazio para todas."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk de origem",
+          "description": "Trunk usado para originar a chamada. Deixe vazio para todas."
         }
       }
     },
@@ -804,6 +836,14 @@
         "ingress": {
           "name": "Origem da chamada",
           "description": "Filtro opcional."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk receptor",
+          "description": "Trunk que recebeu a chamada. Deixe vazio para todas."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk de origem",
+          "description": "Trunk usado para originar a chamada. Deixe vazio para todas."
         },
         "reason": {
           "name": "Motivo do encerramento",
@@ -831,6 +871,14 @@
           "name": "Origem da chamada",
           "description": "Filtro opcional."
         },
+        "inbound_trunk_id": {
+          "name": "Trunk receptor",
+          "description": "Trunk que recebeu a chamada. Deixe vazio para todas."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk de origem",
+          "description": "Trunk usado para originar a chamada. Deixe vazio para todas."
+        },
         "digit": {
           "name": "Tecla",
           "description": "Filtro opcional."
@@ -856,6 +904,14 @@
         "ingress": {
           "name": "Origem da chamada",
           "description": "Filtro opcional."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk receptor",
+          "description": "Trunk que recebeu a chamada. Deixe vazio para todas."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk de origem",
+          "description": "Trunk usado para originar a chamada. Deixe vazio para todas."
         },
         "for": {
           "name": "Tempo sem resposta",

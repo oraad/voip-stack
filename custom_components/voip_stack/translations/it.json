@@ -732,6 +732,14 @@
         "ingress": {
           "name": "Provenienza della chiamata",
           "description": "Filtro facoltativo."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk ricevente",
+          "description": "Trunk che ha ricevuto la chiamata. Lascia vuoto per tutte."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk chiamante",
+          "description": "Trunk usato per effettuare la chiamata. Lascia vuoto per tutte."
         }
       }
     },
@@ -750,6 +758,14 @@
         "ingress": {
           "name": "Provenienza della chiamata",
           "description": "Filtro facoltativo."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk ricevente",
+          "description": "Trunk che ha ricevuto la chiamata. Lascia vuoto per tutte."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk chiamante",
+          "description": "Trunk usato per effettuare la chiamata. Lascia vuoto per tutte."
         }
       }
     },
@@ -768,6 +784,14 @@
         "ingress": {
           "name": "Provenienza della chiamata",
           "description": "Filtro facoltativo."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk ricevente",
+          "description": "Trunk che ha ricevuto la chiamata. Lascia vuoto per tutte."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk chiamante",
+          "description": "Trunk usato per effettuare la chiamata. Lascia vuoto per tutte."
         }
       }
     },
@@ -786,6 +810,14 @@
         "ingress": {
           "name": "Provenienza della chiamata",
           "description": "Filtro facoltativo."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk ricevente",
+          "description": "Trunk che ha ricevuto la chiamata. Lascia vuoto per tutte."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk chiamante",
+          "description": "Trunk usato per effettuare la chiamata. Lascia vuoto per tutte."
         }
       }
     },
@@ -804,6 +836,14 @@
         "ingress": {
           "name": "Provenienza della chiamata",
           "description": "Filtro facoltativo."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk ricevente",
+          "description": "Trunk che ha ricevuto la chiamata. Lascia vuoto per tutte."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk chiamante",
+          "description": "Trunk usato per effettuare la chiamata. Lascia vuoto per tutte."
         },
         "reason": {
           "name": "Motivo della chiusura",
@@ -831,6 +871,14 @@
           "name": "Provenienza della chiamata",
           "description": "Filtro facoltativo."
         },
+        "inbound_trunk_id": {
+          "name": "Trunk ricevente",
+          "description": "Trunk che ha ricevuto la chiamata. Lascia vuoto per tutte."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk chiamante",
+          "description": "Trunk usato per effettuare la chiamata. Lascia vuoto per tutte."
+        },
         "digit": {
           "name": "Tasto",
           "description": "Filtro facoltativo."
@@ -856,6 +904,14 @@
         "ingress": {
           "name": "Provenienza della chiamata",
           "description": "Filtro facoltativo."
+        },
+        "inbound_trunk_id": {
+          "name": "Trunk ricevente",
+          "description": "Trunk che ha ricevuto la chiamata. Lascia vuoto per tutte."
+        },
+        "outbound_trunk_id": {
+          "name": "Trunk chiamante",
+          "description": "Trunk usato per effettuare la chiamata. Lascia vuoto per tutte."
         },
         "for": {
           "name": "Tempo senza risposta",

@@ -732,6 +732,14 @@
         "ingress": {
           "name": "Call origin",
           "description": "Optional filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Receiving trunk",
+          "description": "Trunk that received the call. Leave empty for all."
+        },
+        "outbound_trunk_id": {
+          "name": "Placing trunk",
+          "description": "Trunk used to place the call. Leave empty for all."
         }
       }
     },
@@ -750,6 +758,14 @@
         "ingress": {
           "name": "Call origin",
           "description": "Optional filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Receiving trunk",
+          "description": "Trunk that received the call. Leave empty for all."
+        },
+        "outbound_trunk_id": {
+          "name": "Placing trunk",
+          "description": "Trunk used to place the call. Leave empty for all."
         }
       }
     },
@@ -768,6 +784,14 @@
         "ingress": {
           "name": "Call origin",
           "description": "Optional filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Receiving trunk",
+          "description": "Trunk that received the call. Leave empty for all."
+        },
+        "outbound_trunk_id": {
+          "name": "Placing trunk",
+          "description": "Trunk used to place the call. Leave empty for all."
         }
       }
     },
@@ -786,6 +810,14 @@
         "ingress": {
           "name": "Call origin",
           "description": "Optional filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Receiving trunk",
+          "description": "Trunk that received the call. Leave empty for all."
+        },
+        "outbound_trunk_id": {
+          "name": "Placing trunk",
+          "description": "Trunk used to place the call. Leave empty for all."
         }
       }
     },
@@ -804,6 +836,14 @@
         "ingress": {
           "name": "Call origin",
           "description": "Optional filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Receiving trunk",
+          "description": "Trunk that received the call. Leave empty for all."
+        },
+        "outbound_trunk_id": {
+          "name": "Placing trunk",
+          "description": "Trunk used to place the call. Leave empty for all."
         },
         "reason": {
           "name": "End reason",
@@ -831,6 +871,14 @@
           "name": "Call origin",
           "description": "Optional filter."
         },
+        "inbound_trunk_id": {
+          "name": "Receiving trunk",
+          "description": "Trunk that received the call. Leave empty for all."
+        },
+        "outbound_trunk_id": {
+          "name": "Placing trunk",
+          "description": "Trunk used to place the call. Leave empty for all."
+        },
         "digit": {
           "name": "Keypad digit",
           "description": "Optional filter."
@@ -856,6 +904,14 @@
         "ingress": {
           "name": "Call origin",
           "description": "Optional filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Receiving trunk",
+          "description": "Trunk that received the call. Leave empty for all."
+        },
+        "outbound_trunk_id": {
+          "name": "Placing trunk",
+          "description": "Trunk used to place the call. Leave empty for all."
         },
         "for": {
           "name": "Time without an answer",

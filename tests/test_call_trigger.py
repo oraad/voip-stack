@@ -107,6 +107,18 @@ def test_filters_use_snapshot_and_allow_optional_destination():
     assert trigger.matches_call(snapshot, {"destination": "666"})
     assert not trigger.matches_call(snapshot, {"caller": "Bob"})
     assert not trigger.matches_call(snapshot, {"ingress": "trunk"})
+    assert trigger.matches_call(
+        {**snapshot, "inbound_trunk_id": "home"}, {"inbound_trunk_id": "HOME"}
+    )
+    assert not trigger.matches_call(
+        {**snapshot, "inbound_trunk_id": "home"}, {"outbound_trunk_id": "work"}
+    )
+
+
+def test_trigger_options_accept_directional_trunk_filters():
+    assert trigger.OPTIONS_SCHEMA(
+        {"inbound_trunk_id": "home", "outbound_trunk_id": "work"}
+    ) == {"inbound_trunk_id": "home", "outbound_trunk_id": "work"}
 
 
 def test_legacy_explicit_action_is_unchanged_without_context(hass):

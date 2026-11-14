@@ -381,8 +381,16 @@ The payload includes the canonical SIP fields when available: `state`,
 `automation_control`, `caller`, `callee`, `peer_name`, `direction`,
 `local_name`, `target`, `sip_uri`, `route_kind`, `sip_transport`,
 `sip_status_code`, `terminal_reason`, `endpoint_id`, source/destination endpoint
-and Device IDs, stable `ingress` / `origin` (`trunk` or `extension`), selected
-media formats, and RTP counters.
+and Device IDs, stable `ingress` / `origin` (`trunk` or `extension`),
+`inbound_trunk_id` / `inbound_trunk_name` when the call arrived from a configured
+SIP trunk, `outbound_trunk_id` / `outbound_trunk_name` when it leaves through
+one, selected media formats, and RTP counters. Trunk IDs are stable configured
+identities; trunk names are current display labels and can change on rename.
+These event IDs are not the `trunk_id` service selector, which also accepts a
+trunk Device ID or its unique display name.
+Both directions can appear on one call when a trunk call is forwarded or bridged
+through another line. Native triggers accept `inbound_trunk_id` and
+`outbound_trunk_id` filters.
 
 Existing Event Entity automations use HA's `event.received` trigger. Raw event-bus messages
 are internal plumbing between the integration, frontend and Event Entities and

@@ -9,7 +9,7 @@ from .config import normalized_trunk_config, trunk_config, trunk_enabled
 from .const import DOMAIN
 from .runtime_data import require_runtime_data, sip_trunk
 from .store import config_entry
-from .trunk_config import trunk_subentries
+from .trunk_config import trunk_identity, trunk_subentries
 from .trunk_policy import trunk_available
 
 
@@ -49,7 +49,7 @@ def resolve_trunk_selector(hass, value: str) -> str:
             if domain == DOMAIN and identifier.startswith("trunk:") and identifier[6:] in runtime.trunk_configs:
                 return identifier[6:]
     entry = config_entry(hass)
-    matches = [str(item.data.get("trunk_id") or item.subentry_id)
+    matches = [trunk_identity(item)
                for item in trunk_subentries(entry) if item.title.casefold() == value.casefold()] if entry else []
     if len(matches) == 1:
         return matches[0]

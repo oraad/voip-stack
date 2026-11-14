@@ -277,3 +277,4 @@ class AudioSpliceTest(unittest.IsolatedAsyncioTestCase):
                     if escaped not in (first, second):
                         await escaped.stop()
                     await calls.shutdown()
+

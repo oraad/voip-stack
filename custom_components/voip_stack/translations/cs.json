@@ -732,6 +732,14 @@
         "ingress": {
           "name": "Původ hovoru",
           "description": "Volitelný filtr."
+        },
+        "inbound_trunk_id": {
+          "name": "Příchozí trunk",
+          "description": "Trunk, který hovor přijal. Pro všechny ponechte prázdné."
+        },
+        "outbound_trunk_id": {
+          "name": "Odchozí trunk",
+          "description": "Trunk použitý k vytvoření hovoru. Pro všechny ponechte prázdné."
         }
       }
     },
@@ -750,6 +758,14 @@
         "ingress": {
           "name": "Původ hovoru",
           "description": "Volitelný filtr."
+        },
+        "inbound_trunk_id": {
+          "name": "Příchozí trunk",
+          "description": "Trunk, který hovor přijal. Pro všechny ponechte prázdné."
+        },
+        "outbound_trunk_id": {
+          "name": "Odchozí trunk",
+          "description": "Trunk použitý k vytvoření hovoru. Pro všechny ponechte prázdné."
         }
       }
     },
@@ -768,6 +784,14 @@
         "ingress": {
           "name": "Původ hovoru",
           "description": "Volitelný filtr."
+        },
+        "inbound_trunk_id": {
+          "name": "Příchozí trunk",
+          "description": "Trunk, který hovor přijal. Pro všechny ponechte prázdné."
+        },
+        "outbound_trunk_id": {
+          "name": "Odchozí trunk",
+          "description": "Trunk použitý k vytvoření hovoru. Pro všechny ponechte prázdné."
         }
       }
     },
@@ -786,6 +810,14 @@
         "ingress": {
           "name": "Původ hovoru",
           "description": "Volitelný filtr."
+        },
+        "inbound_trunk_id": {
+          "name": "Příchozí trunk",
+          "description": "Trunk, který hovor přijal. Pro všechny ponechte prázdné."
+        },
+        "outbound_trunk_id": {
+          "name": "Odchozí trunk",
+          "description": "Trunk použitý k vytvoření hovoru. Pro všechny ponechte prázdné."
         }
       }
     },
@@ -804,6 +836,14 @@
         "ingress": {
           "name": "Původ hovoru",
           "description": "Volitelný filtr."
+        },
+        "inbound_trunk_id": {
+          "name": "Příchozí trunk",
+          "description": "Trunk, který hovor přijal. Pro všechny ponechte prázdné."
+        },
+        "outbound_trunk_id": {
+          "name": "Odchozí trunk",
+          "description": "Trunk použitý k vytvoření hovoru. Pro všechny ponechte prázdné."
         },
         "reason": {
           "name": "Důvod ukončení",
@@ -831,6 +871,14 @@
           "name": "Původ hovoru",
           "description": "Volitelný filtr."
         },
+        "inbound_trunk_id": {
+          "name": "Příchozí trunk",
+          "description": "Trunk, který hovor přijal. Pro všechny ponechte prázdné."
+        },
+        "outbound_trunk_id": {
+          "name": "Odchozí trunk",
+          "description": "Trunk použitý k vytvoření hovoru. Pro všechny ponechte prázdné."
+        },
         "digit": {
           "name": "Číslice klávesnice",
           "description": "Volitelný filtr."
@@ -856,6 +904,14 @@
         "ingress": {
           "name": "Původ hovoru",
           "description": "Volitelný filtr."
+        },
+        "inbound_trunk_id": {
+          "name": "Příchozí trunk",
+          "description": "Trunk, který hovor přijal. Pro všechny ponechte prázdné."
+        },
+        "outbound_trunk_id": {
+          "name": "Odchozí trunk",
+          "description": "Trunk použitý k vytvoření hovoru. Pro všechny ponechte prázdné."
         },
         "for": {
           "name": "Doba bez odpovědi",
