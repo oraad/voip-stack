@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Resolve number-only trunk caller identities through the central phonebook and
+  show the contact name on calls, cards, ESP displays and the Logbook. A valid
+  provider-supplied `From` name is never replaced. The untouched SIP identity
+  remains available as `caller_id`, and native caller filters continue to match
+  the raw number.
+
 ## 2026.11.0
 
 > **VoIP Stack for Home Assistant does not require ESPHome or ESP devices.** You can use the integration with browser softphones and standard SIP phones.

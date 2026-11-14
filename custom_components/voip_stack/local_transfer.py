@@ -63,6 +63,7 @@ async def try_local_audio_transfer(hass, runtime, grant, referrer):
     goal = original if from_callee else calls.upsert(
         f"ha-transfer-{secrets.token_hex(12)}", state="connecting", owner="bridge",
         caller=str(original.metadata.get("connected_party") or original.callee),
+        caller_id=str(original.metadata.get("caller_id") or ""),
         callee=consultation.callee, route_kind=consultation.route_kind,
         source_endpoint_id=grant.endpoint_id,
         ingress="trunk" if old_leg.trunk_id or original.route_kind == "trunk" else "extension",
@@ -108,7 +109,8 @@ async def try_local_audio_transfer(hass, runtime, grant, referrer):
         client.on_refer = None
         calls.register_bridge(source_call_id=goal.call_id, dest_call_id=new_destination,
                               client=client, lifecycle_task=watch_client(client), state="in_call",
-                              caller=goal.caller, callee=consultation.callee, route_kind=consultation.route_kind,
+                              caller=goal.caller, caller_id=str(goal.metadata.get("caller_id") or ""),
+                              callee=consultation.callee, route_kind=consultation.route_kind,
                               expected_generation=goal.generation)
         goal.legs[new_destination].trunk_id = destination_trunk_id
         if target:
@@ -126,8 +128,17 @@ async def try_local_audio_transfer(hass, runtime, grant, referrer):
         if source_client is not None:
             binder.attach_audio_side(source_client, relay, source_call_id=goal.call_id, side="left")
             goal.claim_answer(goal.token, lambda: True)
-        attach_dtmf_event_bridge(hass, relay, call_id=goal.call_id, dest_call_id=new_destination,
-                                 caller=goal.caller, callee=consultation.callee, client=client, source_client=source_client)
+        attach_dtmf_event_bridge(
+            hass,
+            relay,
+            call_id=goal.call_id,
+            dest_call_id=new_destination,
+            caller=goal.caller,
+            caller_id=str(goal.metadata.get("caller_id") or ""),
+            callee=consultation.callee,
+            client=client,
+            source_client=source_client,
+        )
 
     try:
         with SessionHandoff(calls, original, consultation, goal) as handoff:

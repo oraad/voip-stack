@@ -214,7 +214,8 @@ def _load_module():
         build_answer_directional=build_answer_directional,
         constrained_video_direction=lambda *_args, **_kwargs: "inactive",
     )
-    _module("sip_listener", SipInviteResult=_Result)
+    _module("sip_listener", SipInviteResult=_Result,
+            sip_caller_id=lambda invite: str(getattr(invite, "caller_id", "") or ""))
     _module(
         "websocket_api",
         _set_ha_softphone_call_state=lambda _hass, state, **values: (

@@ -276,6 +276,9 @@ def publish_call_projection(
         from .websocket_api import _set_ha_softphone_call_state
 
         endpoint = runtime_data.endpoints.get(event.endpoint_id)
+        phone_details = dict(details)
+        if "caller_id" not in phone_details:
+            phone_details["caller_id"] = str(metadata.get("caller_id") or "")
         _set_ha_softphone_call_state(
             hass,
             state,
@@ -288,11 +291,14 @@ def publish_call_projection(
             caller=session.caller,
             callee=session.callee,
             call_id=session.call_id,
-            **details,
+            **phone_details,
         )
     else:
         from .websocket_api import _set_sip_bridge_call_state
 
+        bridge_details = dict(details)
+        if "caller_id" not in bridge_details:
+            bridge_details["caller_id"] = str(metadata.get("caller_id") or "")
         _set_sip_bridge_call_state(
             hass,
             state,
@@ -300,7 +306,7 @@ def publish_call_projection(
             dest_call_id=str(metadata.get("bridge_dest_call_id") or ""),
             caller=session.caller,
             callee=session.callee,
-            **details,
+            **bridge_details,
         )
     return True
 

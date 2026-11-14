@@ -15,6 +15,7 @@ from .endpoint_lifecycle import call_registry
 from .fsm import CallState
 from .outbound_attempts import BrowserLeg
 from .phone_endpoint import EndpointAvailability, EndpointKind
+from .sip_listener import sip_caller_id
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def settle_browser_candidates(
     *,
     call_id: str,
     caller: str,
+    caller_id: str = "",
     callee: str,
     state: str,
     reason: str,
@@ -74,6 +76,7 @@ def settle_browser_candidates(
                 state,
                 leg_id=leg_id,
                 peer_name=caller,
+                caller_id=caller_id,
                 direction="incoming",
                 reason=reason,
                 terminal_reason=reason,
@@ -105,11 +108,13 @@ def publish_browser_candidates_ringing(
 
     if not browser_legs:
         return
+    caller_raw = sip_caller_id(invite)
     session = registry.upsert(
         invite.call_id,
         state=CallState.RINGING.value,
         owner="ha_softphone",
         caller=invite.caller,
+        **({"caller_id": caller_raw} if caller_raw else {}),
         callee=callee,
         route_kind=route_kind,
         endpoint_id=origin_endpoint_id,
@@ -126,6 +131,7 @@ def publish_browser_candidates_ringing(
             CallState.RINGING.value,
             leg_id=f"browser:{leg.endpoint_id}",
             peer_name=invite.caller,
+            caller_id=sip_caller_id(invite),
             direction="incoming",
             selected_tx_format=invite.send_format.audio_format.wire_token(),
             selected_rx_format=invite.recv_format.audio_format.wire_token(),
@@ -169,6 +175,7 @@ def publish_ring_group_origin_state(
     session = registry.get_session(call_id)
     if session is None:
         return
+    caller_id = str(session.metadata.get("caller_id") or "").strip()
     leg_id = f"browser-origin:{endpoint_id}"
     if state in {
         CallState.IDLE.value,
@@ -191,6 +198,7 @@ def publish_ring_group_origin_state(
             session,
             endpoint_id,
             peer_name=peer_name,
+            **({"caller_id": caller_id} if caller_id else {}),
             direction="outgoing",
             **extra,
         )
@@ -203,6 +211,7 @@ def publish_ring_group_origin_state(
         state,
         leg_id=leg_id,
         peer_name=peer_name,
+        **({"caller_id": caller_id} if caller_id else {}),
         direction="outgoing",
         **extra,
     )

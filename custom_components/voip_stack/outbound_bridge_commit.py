@@ -42,6 +42,7 @@ class BridgeCommitPolicy:
 
     route_kind: str
     caller: str
+    caller_id: str = ""
     callee: str
     connected_party: str
     source_role: str = "caller"
@@ -133,6 +134,7 @@ async def async_commit_outbound_bridge(
             lifecycle_task=watcher,
             state=policy.bridge_state,
             caller=policy.caller,
+            caller_id=policy.caller_id,
             callee=policy.callee,
             route_kind=policy.route_kind,
             ingress=policy.ingress,
@@ -272,6 +274,7 @@ async def async_commit_outbound_bridge(
             call_id=invite.call_id,
             dest_call_id=dest_call_id,
             caller=policy.caller,
+            caller_id=policy.caller_id,
             callee=policy.connected_party,
             client=client,
             source_client=data.source_client,

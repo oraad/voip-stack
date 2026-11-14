@@ -533,7 +533,11 @@ actions:
 
 The `caller` value is the resolved name or number shown by
 `event.voip_stack_call`; replace `426` with the exact value exposed by your
-caller. The destinations may likewise be phonebook names, extensions, groups,
+caller. A caller filter also matches `caller_id`, so a trunk number continues to
+match after a phonebook name replaces its display text. **This changes behavior
+for number-only trunk callers:** an automation that filters on the raw provider
+number will still fire even when the card shows the resolved phonebook name.
+The destinations may likewise be phonebook names, extensions, groups,
 registered SIP phones or Assist.
 
 ### Route only provider/PBX trunk calls to a ring group
@@ -1021,9 +1025,11 @@ stable states are:
 - `terminating`
 
 Attributes include stable endpoint identity plus active-call `call_id`,
-`direction`, `ingress`, `peer_name` and `terminal_reason`. `ingress` is
-`trunk` for provider/PBX calls and `extension` for locally originated SIP
-calls. Ordinary single-call automations do not need to read these fields.
+`direction`, `ingress`, `peer_name`, `caller`, `caller_id` and
+`terminal_reason`. `ingress` is `trunk` for provider/PBX calls and `extension`
+for locally originated SIP calls. `caller` is the presentation name and
+`caller_id` preserves the raw SIP identity. Ordinary single-call automations do
+not need to read these fields.
 
 The phone Device itself is the Home Assistant registry container; entities are
 its triggerable state/event surfaces. The per-phone Event Entity, durable

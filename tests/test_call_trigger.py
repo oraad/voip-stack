@@ -98,6 +98,7 @@ async def test_delayed_action_does_not_select_replacement_call(hass, registry):
 def test_filters_use_snapshot_and_allow_optional_destination():
     snapshot = {
         "caller": "Alice",
+        "caller_id": "+12025550100",
         "callee": "Prova",
         "called_extension": "666",
         "ingress": "extension",
@@ -106,6 +107,7 @@ def test_filters_use_snapshot_and_allow_optional_destination():
     assert trigger.matches_call(snapshot, {"destination": "  prova "})
     assert trigger.matches_call(snapshot, {"destination": "666"})
     assert not trigger.matches_call(snapshot, {"caller": "Bob"})
+    assert trigger.matches_call(snapshot, {"caller": "+12025550100"})
     assert not trigger.matches_call(snapshot, {"ingress": "trunk"})
 
 

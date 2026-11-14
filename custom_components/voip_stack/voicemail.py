@@ -23,6 +23,7 @@ from .mailbox import (EVENT_VOICEMAIL_CHANGED, EVENT_VOICEMAIL_RECEIVED, get_arc
                       mailbox_settings, selected_mailbox, message_audio_reference)
 from .roster import RosterEntry
 from .session_cleanup import async_wait_for_cleanup
+from .sip_listener import sip_caller_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -108,11 +109,15 @@ class VoicemailCall(LocalCallApplication):
             if self.removed:
                 return
             duration = max(segment["start"] + segment["frames"] / segment["sample_rate"] for segment in entry["segments"])
-            self.hass.bus.async_fire(EVENT_VOICEMAIL_RECEIVED, {
+            event = {
                 "mailbox_id": self.mailbox_id, "message_id": entry["id"], "caller": entry["caller"],
                 "duration": duration, "partial": entry["status"] == "partial",
                 **message_audio_reference(self.hass, archive, entry),
-            })
+            }
+            caller_id = str(self.session.metadata.get("caller_id") or "")
+            if caller_id:
+                event["caller_id"] = caller_id
+            self.hass.bus.async_fire(EVENT_VOICEMAIL_RECEIVED, event)
             self.hass.bus.async_fire(EVENT_VOICEMAIL_CHANGED, {"endpoint_id": self.mailbox_id})
 
     async def close(self, _reason):
@@ -209,7 +214,8 @@ async def route_voicemail_call(runtime, invite, decision, registry, source_endpo
                                   source_endpoint=source_endpoint, state="ringing", route_kind="voicemail"):
         return busy
     session = registry.upsert(invite.call_id, state="ringing", owner="router",
-                              caller=invite.caller, callee=mailbox.name if mailbox is not None else "Voicemail", route_kind="voicemail")
+                              caller=invite.caller, caller_id=sip_caller_id(invite),
+                              callee=mailbox.name if mailbox is not None else "Voicemail", route_kind="voicemail")
     registry.set_pending_invite(invite.call_id, invite)
     try:
         await start_voicemail_application(runtime.hass, session, invite, mailbox, runtime.local_ip,

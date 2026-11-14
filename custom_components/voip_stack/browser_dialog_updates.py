@@ -43,9 +43,14 @@ def attach_browser_dialog_updates(hass, client, endpoint_id, source_device_id, *
             if descriptor is not None:
                 from .local_call_media import ApplicationCallSource
                 if isinstance(descriptor.get("invite"), ApplicationCallSource):
-                    descriptor["invite"] = ApplicationCallSource.from_peer_dialog(updated,
-                        call_id=call_id, caller=session.caller, target=session.callee,
-                        trunk_id=str(session.metadata.get("inbound_trunk_id") or ""))
+                    descriptor["invite"] = ApplicationCallSource.from_peer_dialog(
+                        updated,
+                        call_id=call_id,
+                        caller=session.caller,
+                        caller_id=str(session.metadata.get("caller_id") or ""),
+                        target=session.callee,
+                        trunk_id=str(session.metadata.get("inbound_trunk_id") or ""),
+                    )
             if audio_session is not None:
                 commit_audio_session_update(
                     audio_session,

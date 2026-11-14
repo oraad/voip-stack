@@ -65,7 +65,7 @@ from ..sip_bridge import (
     video_bridge_offer_formats,
 )
 from ..sip_client import SIP_TIMER_B, SipCallClient
-from ..sip_listener import SipInviteResult
+from ..sip_listener import SipInviteResult, sip_caller_id
 
 if TYPE_CHECKING:
     from ..pbx_runtime import SipEndpointRuntime
@@ -378,6 +378,7 @@ async def route_sip_bridge(
             state=CallState.CONNECTING.value,
             owner="router",
             caller=invite.caller,
+            caller_id=sip_caller_id(invite),
             callee=resolved_callee,
             route_kind=decision.action.value,
             source_endpoint_id=(
@@ -565,6 +566,7 @@ async def route_sip_bridge(
                 BridgeCommitPolicy(
                     route_kind=decision.action.value,
                     caller=invite.caller,
+                    caller_id=sip_caller_id(invite),
                     callee=resolved_callee,
                     connected_party=resolved_callee,
                     ingress="trunk" if trunk_invite else "extension",
@@ -641,6 +643,7 @@ async def route_sip_bridge(
         lifecycle_task=finish_task,
         state=CallState.CONNECTING.value,
         caller=invite.caller,
+        caller_id=sip_caller_id(invite),
         callee=resolved_callee,
         route_kind=decision.action.value,
         ingress="trunk" if trunk_invite else "extension",
