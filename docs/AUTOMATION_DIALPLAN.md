@@ -359,6 +359,10 @@ use a direct script action for a greeting-and-forward sequence.
 | `voip_stack.call_ended` | The call ends | Destination, outcome and optional reason |
 | `voip_stack.dtmf_received` | A caller or called party presses a key | Caller, destination, key and source side |
 
+Use `inbound_trunk_id` or `outbound_trunk_id` to select a configured SIP line.
+Match the stable trunk ID, not its display name, so a rename does not break the
+automation.
+
 The initial routing trigger is for a quick decision. A matching native trigger
 activates the existing decision window automatically; new automations do not
 need the older automation-routing switch. For a greeting, input menu or other

@@ -261,6 +261,9 @@ automatically. See [migration instructions](docs/BREAKING_CHANGES.md#pbx-develop
 - Add independent named trunks. Choose a line per call or phone, with a global
   default. ESP action overrides use a correlated native API request rather than
   changing the phone's preference or affecting its next unrelated call.
+- Report `inbound_trunk_id` / `inbound_trunk_name` and `outbound_trunk_id` /
+  `outbound_trunk_name` in call events and allow native triggers to filter on the
+  stable trunk IDs.
 
 ### 📬 Voicemail
 

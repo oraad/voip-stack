@@ -94,6 +94,11 @@ async def request_route_override(
         caller=invite.caller,
         callee=decision.target or invite.target,
         route_kind=decision.action.value,
+        **(
+            {"inbound_trunk_id": invite.trunk_id}
+            if trunk_invite and invite.trunk_id
+            else {}
+        ),
     )
     if session is None:
         return AutomationRoute()

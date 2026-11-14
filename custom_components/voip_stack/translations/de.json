@@ -732,6 +732,14 @@
         "ingress": {
           "name": "Anrufherkunft",
           "description": "Optionaler Filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Empfangender Trunk",
+          "description": "Trunk, der den Anruf empfangen hat. Für alle leer lassen."
+        },
+        "outbound_trunk_id": {
+          "name": "Ausgehender Trunk",
+          "description": "Trunk, über den der Anruf geführt wurde. Für alle leer lassen."
         }
       }
     },
@@ -750,6 +758,14 @@
         "ingress": {
           "name": "Anrufherkunft",
           "description": "Optionaler Filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Empfangender Trunk",
+          "description": "Trunk, der den Anruf empfangen hat. Für alle leer lassen."
+        },
+        "outbound_trunk_id": {
+          "name": "Ausgehender Trunk",
+          "description": "Trunk, über den der Anruf geführt wurde. Für alle leer lassen."
         }
       }
     },
@@ -768,6 +784,14 @@
         "ingress": {
           "name": "Anrufherkunft",
           "description": "Optionaler Filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Empfangender Trunk",
+          "description": "Trunk, der den Anruf empfangen hat. Für alle leer lassen."
+        },
+        "outbound_trunk_id": {
+          "name": "Ausgehender Trunk",
+          "description": "Trunk, über den der Anruf geführt wurde. Für alle leer lassen."
         }
       }
     },
@@ -786,6 +810,14 @@
         "ingress": {
           "name": "Anrufherkunft",
           "description": "Optionaler Filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Empfangender Trunk",
+          "description": "Trunk, der den Anruf empfangen hat. Für alle leer lassen."
+        },
+        "outbound_trunk_id": {
+          "name": "Ausgehender Trunk",
+          "description": "Trunk, über den der Anruf geführt wurde. Für alle leer lassen."
         }
       }
     },
@@ -804,6 +836,14 @@
         "ingress": {
           "name": "Anrufherkunft",
           "description": "Optionaler Filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Empfangender Trunk",
+          "description": "Trunk, der den Anruf empfangen hat. Für alle leer lassen."
+        },
+        "outbound_trunk_id": {
+          "name": "Ausgehender Trunk",
+          "description": "Trunk, über den der Anruf geführt wurde. Für alle leer lassen."
         },
         "reason": {
           "name": "Beendigungsgrund",
@@ -831,6 +871,14 @@
           "name": "Anrufherkunft",
           "description": "Optionaler Filter."
         },
+        "inbound_trunk_id": {
+          "name": "Empfangender Trunk",
+          "description": "Trunk, der den Anruf empfangen hat. Für alle leer lassen."
+        },
+        "outbound_trunk_id": {
+          "name": "Ausgehender Trunk",
+          "description": "Trunk, über den der Anruf geführt wurde. Für alle leer lassen."
+        },
         "digit": {
           "name": "Taste",
           "description": "Optionaler Filter."
@@ -856,6 +904,14 @@
         "ingress": {
           "name": "Anrufherkunft",
           "description": "Optionaler Filter."
+        },
+        "inbound_trunk_id": {
+          "name": "Empfangender Trunk",
+          "description": "Trunk, der den Anruf empfangen hat. Für alle leer lassen."
+        },
+        "outbound_trunk_id": {
+          "name": "Ausgehender Trunk",
+          "description": "Trunk, über den der Anruf geführt wurde. Für alle leer lassen."
         },
         "for": {
           "name": "Zeit ohne Antwort",

@@ -66,3 +66,5 @@ Thumbs.db
 
 # Local-only assistant avatars
 /assets/images/assistant/art/
+
+/test-results/
