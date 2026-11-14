@@ -9,10 +9,12 @@ import esphome
 from esphome import yaml_util
 import pytest
 
+from tests.support.sibling_repos import sibling_repo
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ESPHOME = Path(esphome.__file__).resolve().parent
-AUDIO_STACK = Path(os.environ.get("AUDIO_STACK_REPO", ROOT.parent / "esphome-audio-stack"))
+AUDIO_STACK = sibling_repo("AUDIO_STACK_REPO", "esphome-audio-stack")
 
 
 def source_function(source, signature):

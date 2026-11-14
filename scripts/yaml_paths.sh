@@ -9,15 +9,18 @@ import subprocess
 import sys
 
 ROOT = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip())
+# Coordinated sibling checkouts live inside the workspace root when this
+# repository is its root, and beside it in nested or CI layouts.
+WORKSPACE = ROOT if (ROOT / "esphome-audio-stack").is_dir() else ROOT.parent
 CAMERA_URL = "github://Psix-anp/esphome-esp-video-camera"
 REPOS = {
     "ext_components_source": ("github://n-IA-hane/esphome-intercom", ROOT),
-    "voip_stack_components_source": ("github://n-IA-hane/esphome-voip-stack", ROOT.parent / "esphome-voip-stack"),
-    "audio_stack_components_source": ("github://n-IA-hane/esphome-audio-stack", ROOT.parent / "esphome-audio-stack"),
-    "runtime_controller_components_source": ("github://n-IA-hane/esphome-runtime-controller", ROOT.parent / "esphome-runtime-controller"),
-    "camera_components_source": (CAMERA_URL, ROOT.parent / "esphome-esp-video-camera"),
+    "voip_stack_components_source": ("github://n-IA-hane/esphome-voip-stack", WORKSPACE / "esphome-voip-stack"),
+    "audio_stack_components_source": ("github://n-IA-hane/esphome-audio-stack", WORKSPACE / "esphome-audio-stack"),
+    "runtime_controller_components_source": ("github://n-IA-hane/esphome-runtime-controller", WORKSPACE / "esphome-runtime-controller"),
+    "camera_components_source": (CAMERA_URL, WORKSPACE / "esphome-esp-video-camera"),
 }
-CAMERA_ROOT = ROOT.parent / "esphome-esp-video-camera"
+CAMERA_ROOT = WORKSPACE / "esphome-esp-video-camera"
 P4_VOIP_YAML_ROOT = ROOT / "yamls/voip-only/single-bus"
 URLS = {url: path for url, path in REPOS.values()}
 
@@ -107,7 +110,7 @@ def rewrite_yaml(path, ref):
         remote_ref = "main" if key == "camera_components_source" else ref
         overrides[key] = relative(path.parent, repo_root / component_dir) if ref == "local" else f"{url}@{remote_ref}"
     if device_entrypoint:
-        overrides["gmf_ai_audio_source"] = str(ROOT.parent / "esp-gmf/elements/gmf_ai_audio") if ref == "local" else ""
+        overrides["gmf_ai_audio_source"] = str(WORKSPACE / "esp-gmf/elements/gmf_ai_audio") if ref == "local" else ""
     if p4:
         overrides["intercom_idf_root"] = str(ROOT / "idf_components") if ref == "local" else ""
         overrides["intercom_idf_ref"] = "main" if ref == "local" else ref

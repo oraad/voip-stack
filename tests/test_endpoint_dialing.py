@@ -408,3 +408,41 @@ async def test_conference_retains_initiator_access_for_outbound_members(monkeypa
     )
     assert not created
     allocate.assert_not_called()
+
+
+def _trunk_invite(caller_uri_text="sip:5550100@sip.tenant-a.example.test"):
+    from custom_components.voip_stack.core import sip as core_sip
+    return SimpleNamespace(
+        routing_caller="5550100", video_format=None,
+        received_via_trunk=True, caller_uri=core_sip.parse_sip_uri(caller_uri_text),
+    )
+
+
+def _leg_identity(monkeypatch, invite, policy=None):
+    dialer, created, _reused = _dialer(monkeypatch)
+    leg = dialer.prepare_outbound_leg(
+        member="100", peers=[], roster_entries=[], local_name="Caller",
+        local_rtp_port_index=1, uri_override="sip:100@example.test",
+        invite=invite,
+        port_reservation=SimpleNamespace(ports=(12000, 12002), release=Mock()),
+        policy=policy or endpoint_dialing.OutboundLegPolicy(),
+    )
+    assert leg is not None
+    return created
+
+
+def test_trunk_origin_leg_keeps_inbound_caller_address(monkeypatch):
+    created = _leg_identity(monkeypatch, _trunk_invite())
+    assert created["local_identity_uri"] == "sip:5550100@sip.tenant-a.example.test"
+
+
+def test_policy_identity_beats_inbound_caller_address(monkeypatch):
+    policy = endpoint_dialing.OutboundLegPolicy(local_identity_uri="sip:kept@example.test")
+    created = _leg_identity(monkeypatch, _trunk_invite(), policy=policy)
+    assert created["local_identity_uri"] == "sip:kept@example.test"
+
+
+def test_locally_originated_leg_has_no_identity_override(monkeypatch):
+    invite = SimpleNamespace(routing_caller="source", video_format=None)
+    created = _leg_identity(monkeypatch, invite)
+    assert created["local_identity_uri"] == ""

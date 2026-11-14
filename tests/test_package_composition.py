@@ -1,7 +1,6 @@
 """Validate feature removal through ESPHome's real package and schema pipeline."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -9,6 +8,8 @@ import sys
 
 from esphome import yaml_util
 import pytest
+
+from tests.support.sibling_repos import sibling_repo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,10 +38,10 @@ def device_config(directory: Path, features: list[str], profile_path: str = 'yam
     substitutions['intercom_idf_root'] = str(ROOT / 'idf_components')
     for key, repository in (
         ('ext_components_source', ROOT),
-        ('audio_stack_components_source', Path(os.environ.get('AUDIO_STACK_REPO', ROOT.parent / 'esphome-audio-stack'))),
-        ('voip_stack_components_source', Path(os.environ.get('VOIP_STACK_REPO', ROOT.parent / 'esphome-voip-stack'))),
-        ('runtime_controller_components_source', Path(os.environ.get('RUNTIME_CONTROLLER_REPO', ROOT.parent / 'esphome-runtime-controller'))),
-        ('camera_components_source', Path(os.environ.get('ESP_VIDEO_CAMERA_REPO', ROOT.parent / 'esphome-esp-video-camera'))),
+        ('audio_stack_components_source', sibling_repo('AUDIO_STACK_REPO', 'esphome-audio-stack')),
+        ('voip_stack_components_source', sibling_repo('VOIP_STACK_REPO', 'esphome-voip-stack')),
+        ('runtime_controller_components_source', sibling_repo('RUNTIME_CONTROLLER_REPO', 'esphome-runtime-controller')),
+        ('camera_components_source', sibling_repo('ESP_VIDEO_CAMERA_REPO', 'esphome-esp-video-camera')),
     ):
         component_path = 'components' if key == 'camera_components_source' else 'esphome/components'
         substitutions[key] = str(repository / component_path)
@@ -453,7 +454,7 @@ def test_p4_feature_composition(tmp_path, profile_path, features):
 def test_legacy_runtime_packages_resolve_to_the_canonical_bindings(tmp_path):
     """Emulate a remote cache, without requiring sibling-relative includes."""
     from esphome.components.packages import resolve_packages
-    runtime = Path(os.environ.get('RUNTIME_CONTROLLER_REPO', ROOT.parent / 'esphome-runtime-controller'))
+    runtime = sibling_repo('RUNTIME_CONTROLLER_REPO', 'esphome-runtime-controller')
     legacy = tmp_path / 'download/runtime'
     shutil.copytree(runtime / 'packages', legacy)
     for package in legacy.rglob('*.yaml'):

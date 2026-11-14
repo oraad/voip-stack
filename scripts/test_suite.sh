@@ -60,7 +60,9 @@ fi
 
 resolve_ha_python() {
   if [[ -z $HA_PYTHON ]]; then
-    if [[ -x "$ROOT/../ha-voip-lab/.venv/bin/python" ]]; then
+    if [[ -x "$ROOT/ha-voip-lab/.venv/bin/python" ]]; then
+      HA_PYTHON="$ROOT/ha-voip-lab/.venv/bin/python"
+    elif [[ -x "$ROOT/../ha-voip-lab/.venv/bin/python" ]]; then
       HA_PYTHON="$ROOT/../ha-voip-lab/.venv/bin/python"
     elif "$PYTHON" -c 'import homeassistant' >/dev/null 2>&1; then
       HA_PYTHON=$PYTHON
