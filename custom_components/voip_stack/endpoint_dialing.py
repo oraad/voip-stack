@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from homeassistant.core import HomeAssistant
 
 from .core.audio_format import HA_TRUNK_AUDIO_FORMATS
+from .call_registry import INBOUND_FROM_KEY, inbound_from_metadata
 from .const import CONF_SIP_VIDEO, CONF_VIDEO_TRANSCODING
 from .endpoint_lifecycle import create_runtime_task
 from .endpoint_routing import (
@@ -61,6 +62,17 @@ class OutboundLegPolicy:
     use_trunk_flow: bool = False
     allow_video: bool = True
     trunk_id: str = ""
+
+
+def _inbound_trunk_identity(invite) -> str:
+    """From URI a forked leg must carry verbatim.
+
+    call_registry.inbound_from_metadata owns this derivation for session
+    metadata; the leg reuses it so both paths keep one invariant.
+    """
+    if invite is None:
+        return ""
+    return inbound_from_metadata(invite).get(INBOUND_FROM_KEY, "")
 
 
 @dataclass(slots=True)
@@ -273,7 +285,8 @@ class EndpointDialer:
                         else local_name
                     )
                 ),
-                local_identity_uri=policy.local_identity_uri,
+                local_identity_uri=policy.local_identity_uri
+                or _inbound_trunk_identity(invite),
                 local_sip_port=int(self.config["sip_port"]),
                 local_rtp_port=ports.ports[local_rtp_port_index],
                 supported_send_formats=sip_send_formats,
@@ -339,9 +352,10 @@ class EndpointDialer:
                     self.config.get(CONF_VIDEO_TRANSCODING, False)
                 ),
             )
-            if not policy.use_trunk_flow:
-                from .sip_runtime import configure_local_contact
-                configure_local_contact(self.hass, client)
+            # The stable server Contact is the leg identity on every path;
+            # a registered trunk may upgrade it to its public GRUU below.
+            from .sip_runtime import configure_local_contact
+            configure_local_contact(self.hass, client)
             if policy.use_trunk_flow:
                 reuse_registered_trunk_flow(sip_trunk(self.hass, policy.trunk_id) if policy.trunk_id else sip_trunk(self.hass), client)
             elif policy.reuse_registered_flow:

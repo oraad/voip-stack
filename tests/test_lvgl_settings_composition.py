@@ -11,6 +11,7 @@ from esphome import yaml_util
 import pytest
 
 from tests.native_profile import action_id, nodes, text
+from tests.support.sibling_repos import sibling_repo
 from tests.test_package_composition import device_config
 
 
@@ -274,7 +275,7 @@ def test_round_boot_events_execute_against_the_real_runtime_profile(tmp_path):
     boot = next(entry for entry in config["esphome"]["on_boot"] if entry["priority"] == 700)
     events = [action["runtime_controller.event"]["event"] for action in boot["then"]
               if "runtime_controller.event" in action]
-    runtime = Path(os.environ.get("RUNTIME_CONTROLLER_REPO", ROOT.parent / "esphome-runtime-controller"))
+    runtime = sibling_repo("RUNTIME_CONTROLLER_REPO", "esphome-runtime-controller")
     profile = subprocess.run([sys.executable, "-c",
         "import sys;sys.path.insert(0,sys.argv[1]);from test_runtime_profile_runtime import _profile_cpp;print(_profile_cpp())",
         str(runtime / "tests")], capture_output=True, text=True)

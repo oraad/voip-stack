@@ -1,13 +1,10 @@
 """Read the coordinated component's actual observer decision body for host probes."""
 
-import os
-from pathlib import Path
+from tests.support.sibling_repos import sibling_repo
 
 
 def source_event_body():
-    root = Path(os.environ.get(
-        "RUNTIME_CONTROLLER_REPO", Path(__file__).resolve().parents[2] / "esphome-runtime-controller"
-    ))
+    root = sibling_repo("RUNTIME_CONTROLLER_REPO", "esphome-runtime-controller")
     source = (root / "esphome/components/runtime_controller/runtime_network_observers.cpp").read_text()
     bodies = []
     for signature, guard in (("void RuntimeNetworkObservers::source_event(", None),
